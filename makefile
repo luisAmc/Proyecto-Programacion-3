@@ -1,7 +1,7 @@
-main: main.o player.o propertycard.o normalproperty.o utilities.o rr.o board.o specialbox.o dice.o
-	g++ main.o player.o propertycard.o normalproperty.o utilities.o rr.o board.o specialbox.o -o main -L./SFML/lib -lsfml-graphics -lsfml-window -lsfml-system
+main: main.o player.o propertycard.o normalproperty.o utilities.o rr.o board.o specialbox.o dice.o communitychest.o chance.o
+	g++ main.o player.o propertycard.o normalproperty.o utilities.o rr.o board.o specialbox.o dice.o communitychest.o chance.o -o main -L./SFML/lib -lsfml-graphics -lsfml-window -lsfml-system
 
-main.o: player.h propertycard.h normalproperty.h utilities.h rr.h board.h specialbox.h dice.h main.cpp
+main.o: player.h propertycard.h normalproperty.h utilities.h rr.h board.h specialbox.h dice.h communitychest.h chance.h main.cpp
 	g++ -c main.cpp -I./SFML/include
 
 player.o: player.h player.cpp
@@ -19,7 +19,7 @@ utilities.o: propertycard.h utilities.h utilities.cpp
 rr.o: propertycard.h rr.h rr.cpp
 	g++ -c rr.cpp -I./SFML/include
 
-board.o: propertycard.h normalproperty.h utilities.h rr.h specialbox.h board.h board.cpp
+board.o: propertycard.h normalproperty.h utilities.h rr.h specialbox.h board.h communitychest.h chance.h board.cpp
 	g++ -c board.cpp -I./SFML/include
 
 specialbox.o: specialbox.h specialbox.cpp
@@ -27,6 +27,12 @@ specialbox.o: specialbox.h specialbox.cpp
 
 dice.o: dice.h dice.cpp
 	g++ -c dice.cpp -I./SFML/include
+
+communitychest.o: communitychest.h communitychest.cpp
+	g++ -c communitychest.cpp -I./SFML/include
+
+chance.o: chance.h chance.cpp
+	g++ -c chance.cpp -I./SFML/include
 
 clean:
 	rm *.o

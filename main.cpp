@@ -7,20 +7,27 @@
 #include "player.h"
 #include "board.h"
 #include "propertycard.h"
+#include "normalproperty.h"
+#include "rr.h"
+#include "utilities.h"
+#include "dice.h"
 using namespace std;
 
 vector<sf::IntRect> vectorCards(int j);
 void selectorRectangles();
 vector<sf::Sprite> createSprites();
+vector<sf::Vector2i> boardPosition();
 
 int main (int argc, char * argv[]) {
     sf::RenderWindow window;
     sf::RenderWindow player_selector;
 
     Board board;
-    vector<PropertyCard> board_places = board.getPlaces();
+    vector<PropertyCard*> board_places = board.getPlaces();
     vector<sf::Sprite> board_sprites = createSprites();
-    cout << "El length es " << board_sprites.size() << endl;
+    vector<sf::Vector2i> board_positions = boardPosition();
+
+    Dice dice;
 
     sf::RenderWindow info_window;
     sf::Texture info_image;
@@ -96,7 +103,6 @@ int main (int argc, char * argv[]) {
 
     std::stringstream money1;
     money1 << "$ " << pj1.getMoney();
-
     std::stringstream money2;
     money2 << "$ " << pj2.getMoney();
 
@@ -108,6 +114,15 @@ int main (int argc, char * argv[]) {
     pj2Money.setColor(sf::Color(0, 255, 0));
     pj1Money.setStyle(sf::Text::Bold);
     pj2Money.setStyle(sf::Text::Bold);
+
+    sf::Texture pj1_texture;
+    pj1_texture.loadFromFile("./resources/robot.png");
+    sf::Texture pj2_texture;
+    pj2_texture.loadFromFile("./resources/ring.png");
+    sf::Sprite pj1_image(pj1_texture);
+    sf::Sprite pj2_image(pj2_texture);
+    pj1_image.setPosition(board_positions[0].x, board_positions[0].y);
+    pj2_image.setPosition(board_positions[0].x, board_positions[0].y);
     //************************************************************************************************************
 
     vector<sf::IntRect> cards_pj1 = vectorCards(0);
@@ -122,20 +137,14 @@ int main (int argc, char * argv[]) {
         return EXIT_FAILURE;
     sf::Sprite background(background_image);
 
-    // sf::RectangleShape cuadrado;
-    // cuadrado.setSize(sf::Vector2f(120.f, 120.f));
-    // cuadrado.setFillColor(sf::Color::White);
-    // sf::IntRect cuadro(cuadrado.getPosition().x, cuadrado.getPosition().y, cuadrado.getSize().x, cuadrado.getSize().y);
     sf::Texture dice_background;
     dice_background.loadFromFile("./resources/dados.png");
     sf::Sprite dice_image(dice_background);
-    sf::RectangleShape diceCuadrado;
-    diceCuadrado.setFillColor(sf::Color::White);
-    sf::IntRect dice_rect();
+    dice_image.setPosition(sf::Vector2f(660, 424));
+    sf::IntRect dice_rect(dice_image.getPosition().x, dice_image.getPosition().y, 60, 48);
 
     //---------------------------------------------------------------------
-    int auxiliar = 0;
-    int cardIndex = 0;
+    int auxiliar = 0, cardIndex = 0, player_turn = 1, pj1_position = 0, pj2_position = 0;
     //---------------------------------------------------------------------
     while (window.isOpen()) {
         sf::Event Event;
@@ -148,21 +157,61 @@ int main (int argc, char * argv[]) {
                     break;
                 case sf::Event::MouseMoved:
                     cardIndex = board.compare(window, info_window, auxiliar);
-                    cout << "cardIndex es " << cardIndex << endl; 
                     if (cardIndex != -1){
                         info_window.setPosition(sf::Vector2i(260, 245));
                         info_window.setVisible(true);
                         info_window.clear(sf::Color::White);
-                        info_window.draw(board_places[cardIndex].getSprite());
-                        cout << endl;
+                        info_window.draw(board_places[cardIndex]->getSprite());
                         info_window.display();
                     } else {
                         info_window.setVisible(false);
                     }
                     break;
+                case sf::Event::MouseButtonPressed:
+                    if (dice_rect.contains(sf::Mouse::getPosition(window))){
+                        int mov = dice.getValue();
+                        if (player_turn == 1) {
+                            if (pj1_position + mov > 40) {
+                                pj1_position = mov - (40 - pj1_position);
+                                pj1.setMoney(pj1.getMoney() + 200);
+                            } else {
+                                pj1_position += mov;
+                            }
+                            
+                            pj1_image.setPosition(board_positions[pj1_position].x, board_positions[pj1_position].y);
+
+                            if (board_places[pj1_position]) {
+                                
+                            }
+
+                            //------------------------------------------
+                            player_turn = 2;
+                            //------------------------------------------
+                        } else if (player_turn == 2) {
+                            if (pj2_position + mov > 40) {
+                                pj2_position = mov - (40 - pj2_position);
+                                pj2.setMoney(pj2.getMoney() + 200);
+                            } else {
+                                pj2_position += mov;
+                            }
+                            pj2_image.setPosition(board_positions[pj2_position].x, board_positions[pj2_position].y);
+
+                            //------------------------------------------
+                            player_turn = 1;
+                            //------------------------------------------
+                        }
+                    }
+                    break;
             }  
 
         }//Final del while interno
+
+        money1.str("");
+        money2.str("");
+        money1 << "$ " << pj1.getMoney();
+        money2 << "$ " << pj2.getMoney();
+        pj1Money.setString(money1.str());
+        pj2Money.setString(money2.str());
 
         window.clear(sf::Color::White);
         window.draw(background);
@@ -170,7 +219,9 @@ int main (int argc, char * argv[]) {
         window.draw(pj2Name);
         window.draw(pj1Money);
         window.draw(pj2Money);
-        window.draw(diceCuadrado);
+        window.draw(pj1_image);
+        window.draw(pj2_image);
+        window.draw(dice_image);
         window.display();
     }
     return 0;
@@ -317,4 +368,53 @@ vector<sf::Sprite> createSprites(){
     places.push_back(s14);
 
     return places;
+}
+
+vector<sf::Vector2i> boardPosition(){
+    vector<sf::Vector2i> positions;
+    positions.push_back(sf::Vector2i(535, 535));
+    positions.push_back(sf::Vector2i(489, 560));
+    positions.push_back(sf::Vector2i(439, 560));
+    positions.push_back(sf::Vector2i(389, 560));
+    positions.push_back(sf::Vector2i(339, 560));
+    positions.push_back(sf::Vector2i(289, 560));
+    positions.push_back(sf::Vector2i(239, 560));
+    positions.push_back(sf::Vector2i(189, 560));
+    positions.push_back(sf::Vector2i(139, 560));
+    positions.push_back(sf::Vector2i(89, 560));
+    positions.push_back(sf::Vector2i(18, 560));
+
+    positions.push_back(sf::Vector2i(18, 490));
+    positions.push_back(sf::Vector2i(18, 440));
+    positions.push_back(sf::Vector2i(18, 390));
+    positions.push_back(sf::Vector2i(18, 340));
+    positions.push_back(sf::Vector2i(18, 290));
+    positions.push_back(sf::Vector2i(18, 240));
+    positions.push_back(sf::Vector2i(18, 190));
+    positions.push_back(sf::Vector2i(18, 140));
+    positions.push_back(sf::Vector2i(18, 90));
+    positions.push_back(sf::Vector2i(18, 30));
+
+    positions.push_back(sf::Vector2i(89, 30));
+    positions.push_back(sf::Vector2i(139, 30));
+    positions.push_back(sf::Vector2i(189, 30));
+    positions.push_back(sf::Vector2i(239, 30));
+    positions.push_back(sf::Vector2i(289, 30));
+    positions.push_back(sf::Vector2i(339, 30));
+    positions.push_back(sf::Vector2i(389, 30));
+    positions.push_back(sf::Vector2i(439, 30));
+    positions.push_back(sf::Vector2i(489, 30));
+    positions.push_back(sf::Vector2i(560, 30));
+
+    positions.push_back(sf::Vector2i(560, 90));
+    positions.push_back(sf::Vector2i(560, 140));
+    positions.push_back(sf::Vector2i(560, 190));
+    positions.push_back(sf::Vector2i(560, 240));
+    positions.push_back(sf::Vector2i(560, 290));
+    positions.push_back(sf::Vector2i(560, 340));
+    positions.push_back(sf::Vector2i(560, 390));
+    positions.push_back(sf::Vector2i(560, 440));
+    positions.push_back(sf::Vector2i(560, 490));
+
+    return positions;
 }

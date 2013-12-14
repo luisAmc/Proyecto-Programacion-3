@@ -89,7 +89,7 @@ int Player::getBox(){
 }
 
 void Player::addBox(){
-    if (box == 39)
+    if (box >= 39)
         box = 0;
     else 
         box++;
