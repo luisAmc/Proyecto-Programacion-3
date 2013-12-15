@@ -28,7 +28,7 @@ specialbox.o: specialbox.h specialbox.cpp
 dice.o: dice.h dice.cpp
 	g++ -c dice.cpp -I./SFML/include
 
-communitychest.o: communitychest.h communitychest.cpp
+communitychest.o: propertycard.h communitychest.h communitychest.cpp
 	g++ -c communitychest.cpp -I./SFML/include
 
 chance.o: chance.h chance.cpp

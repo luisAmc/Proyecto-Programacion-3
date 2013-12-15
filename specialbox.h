@@ -1,10 +1,14 @@
 #pragma once
+#include "propertycard.h"
 
-class SpecialBox{
+class SpecialBox : public PropertyCard{
 public:
-	SpecialBox(int);
-	~SpecialBox();
-	int getId();
-private:
-	int id;
+	SpecialBox(int, int, int, const char*, int, int);
+	virtual const char* getName();
+	virtual int getRent();
+	virtual void setAvailable(int);
+	virtual int getAvailable();
+	virtual void setImage(sf::Texture);
+	virtual sf::Sprite getSprite();
+	virtual sf::IntRect getRect();
 };

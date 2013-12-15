@@ -3,6 +3,7 @@
 #include "propertycard.h"
 
 class CommunityChest : public PropertyCard {
+public:
 	CommunityChest(int, int, int, const char*, int, int);
 	virtual const char* getName();
 	virtual int getRent();

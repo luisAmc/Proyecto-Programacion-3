@@ -2,7 +2,8 @@
 #include <SFML/Graphics.hpp>
 #include "propertycard.h"
 
-class Chance : PropertyCard {
+class Chance : public PropertyCard {
+public:
 	Chance(int, int, int, const char*, int, int);
 	virtual const char* getName();
 	virtual int getRent();
