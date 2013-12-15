@@ -1,5 +1,5 @@
 #include <ctime>
-#include <stdlib.h>
+#include <cstdlib>
 using namespace std;
 
 class Dice{

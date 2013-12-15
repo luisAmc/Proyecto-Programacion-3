@@ -13,6 +13,8 @@ public:
 	virtual void setImage(sf::Texture);
 	virtual sf::Sprite getSprite();
 	virtual int getCost();
+	void addRailroads();
+	int getRailroads();
 	void setOwner(int);
 	int getOwner();
 

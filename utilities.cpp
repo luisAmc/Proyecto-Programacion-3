@@ -5,6 +5,7 @@
 Utilities::Utilities(int x, int y, int rent, int cost, const char* name, int px, int py) : 
 	PropertyCard(x, y, rent, cost, name, px, py){
 		setAvailable(1);	
+		count = 0;
 }
 Utilities::~Utilities(){
 	//Dtor Utilities

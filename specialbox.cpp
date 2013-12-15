@@ -1,7 +1,8 @@
 #include "specialbox.h"
 
-SpecialBox::SpecialBox(int x, int y, int rent, int cost, const char* name, int px, int py) : 
+SpecialBox::SpecialBox(int x, int y, int rent, int cost, const char* name, int px, int py, int ID) : 
 	PropertyCard(x, y, rent, cost, name, px, py){
+	id = ID;
 }
 const char* SpecialBox::getName(){
 	return name;

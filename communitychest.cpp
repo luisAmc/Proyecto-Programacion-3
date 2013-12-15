@@ -29,6 +29,9 @@ sf::Sprite CommunityChest::getSprite(){
 sf::IntRect CommunityChest::getRect(){
 	return clickZone;
 }
+void CommunityChest::setId(int i){
+	id = i;
+}
 int CommunityChest::getId(){
 	return id;
 }

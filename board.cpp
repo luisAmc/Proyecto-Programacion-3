@@ -170,9 +170,15 @@ vector<PropertyCard*> Board::getPlaces(){
 vector<sf::Sprite> Board::getSprites(){
     return sprites;
 }
+vector<CommunityChest*> Board::getCommunityChestCards(){
+    return communitychest_cards;
+}
+vector<Chance*> Board::getChanceCards(){
+    return chance_cards;    
+}
 void Board::initComponents(){
 	//Cafes
-    places.push_back(new SpecialBox(527, 527, 0, 0, "Go", 78, 78));
+    places.push_back(new SpecialBox(527, 527, 0, 0, "Go", 78, 78, 1));
 
 	places.push_back(new NormalProperty(478, 527, 2, 60, "Mediterranean Avenue", 50, 80));
     sf::Texture t1;
@@ -188,7 +194,7 @@ void Board::initComponents(){
 	places[3]->setImage(t3);
     sprites.push_back(places[3]->getSprite());
 
-    places.push_back(new SpecialBox(331, 527, 200, 0, "Income Tax", 50, 80));
+    places.push_back(new SpecialBox(331, 527, 200, 0, "Income Tax", 50, 80, 2));
 
     places.push_back(new RR(281, 527, 25, 200, "Reading Railroad", 50, 80));
     sf::Texture t5;
@@ -217,7 +223,7 @@ void Board::initComponents(){
     places[9]->setImage(t9);
     sprites.push_back(places[9]->getSprite());
 
-    places.push_back(new SpecialBox(6, 527, 0, 0, "Jail", 78, 78));
+    places.push_back(new SpecialBox(6, 527, 0, 0, "Jail", 78, 78, 3));
 
 	//Rosadas
 	places.push_back(new NormalProperty(6, 478, 10, 140, "St. Charles Place", 80, 50));
@@ -271,7 +277,7 @@ void Board::initComponents(){
     places[19]->setImage(t19);
     sprites.push_back(places[19]->getSprite());
 
-    places.push_back(new SpecialBox(6, 6, 0, 0, "Free Parking", 78, 78));
+    places.push_back(new SpecialBox(6, 6, 0, 0, "Free Parking", 78, 78, 4));
 
 	//Rojo
 	places.push_back(new NormalProperty(85, 6, 18, 220, "Kentucky Avenue", 50, 80));
@@ -325,7 +331,7 @@ void Board::initComponents(){
     places[29]->setImage(t29);
     sprites.push_back(places[29]->getSprite());
 
-    places.push_back(new SpecialBox(527, 6, 0, 0, "Go to Jail", 78, 78));
+    places.push_back(new SpecialBox(527, 6, 0, 0, "Go to Jail", 78, 78, 5));
 
 	//Verde
 	places.push_back(new NormalProperty(527, 85, 26, 300, "Pacific Avenue", 80, 50));
@@ -363,7 +369,7 @@ void Board::initComponents(){
     places[37]->setImage(t37);
     sprites.push_back(places[37]->getSprite());
 
-    places.push_back(new SpecialBox(527, 430, 100, 0, "Luxury Tax", 80, 50));
+    places.push_back(new SpecialBox(527, 430, 100, 0, "Luxury Tax", 80, 50, 6));
 
 	places.push_back(new NormalProperty(527, 478, 50, 400, "Boardwalk", 80, 50));
     sf::Texture t39;
@@ -371,4 +377,185 @@ void Board::initComponents(){
     places[39]->setImage(t39);
     sprites.push_back(places[39]->getSprite());
 
+    //-----------------------------------------------------------------------------------------------------------
+    //***********************************************************************************************************
+    //-----------------------------------------------------------------------------------------------------------
+
+    communitychest_cards.push_back(new CommunityChest(0, 0, 0, 0, "CC0", 0, 0));
+    sf::Texture cc0;
+    cc0.loadFromFile("./resources/community/community1.png");
+    communitychest_cards[0]->setImage(cc0);
+    communitychest_cards[0]->setId(0);
+
+    communitychest_cards.push_back(new CommunityChest(0, 0, 0, 0, "CC1", 0, 0));
+    sf::Texture cc1;
+    cc1.loadFromFile("./resources/community/community2.png");
+    communitychest_cards[1]->setImage(cc1);
+    communitychest_cards[1]->setId(1);
+
+    communitychest_cards.push_back(new CommunityChest(0, 0, 0, 0, "CC2", 0, 0));
+    sf::Texture cc2;
+    cc2.loadFromFile("./resources/community/community3.png");
+    communitychest_cards[2]->setImage(cc2);
+    communitychest_cards[2]->setId(2);
+
+    communitychest_cards.push_back(new CommunityChest(0, 0, 0, 0, "CC3", 0, 0));
+    sf::Texture cc3;
+    cc3.loadFromFile("./resources/community/community4.png");
+    communitychest_cards[3]->setImage(cc3);
+    communitychest_cards[3]->setId(3);
+
+    communitychest_cards.push_back(new CommunityChest(0, 0, 0, 0, "CC4", 0, 0));
+    sf::Texture cc4;
+    cc4.loadFromFile("./resources/community/community5.png");
+    communitychest_cards[4]->setImage(cc4);
+    communitychest_cards[4]->setId(4);
+
+    communitychest_cards.push_back(new CommunityChest(0, 0, 0, 0, "CC5", 0, 0));
+    sf::Texture cc5;
+    cc5.loadFromFile("./resources/community/community6.png");
+    communitychest_cards[5]->setImage(cc5);
+    communitychest_cards[5]->setId(5);
+
+    communitychest_cards.push_back(new CommunityChest(0, 0, 0, 0, "CC6", 0, 0));
+    sf::Texture cc6;
+    cc6.loadFromFile("./resources/community/community7.png");
+    communitychest_cards[6]->setImage(cc6);
+    communitychest_cards[6]->setId(6);
+
+    communitychest_cards.push_back(new CommunityChest(0, 0, 0, 0, "CC7", 0, 0));
+    sf::Texture cc7;
+    cc7.loadFromFile("./resources/community/community8.png");
+    communitychest_cards[7]->setImage(cc7);
+    communitychest_cards[7]->setId(7);
+
+    communitychest_cards.push_back(new CommunityChest(0, 0, 0, 0, "CC8", 0, 0));
+    sf::Texture cc8;
+    cc8.loadFromFile("./resources/community/community9.png");
+    communitychest_cards[8]->setImage(cc8);
+    communitychest_cards[8]->setId(8);
+
+    communitychest_cards.push_back(new CommunityChest(0, 0, 0, 0, "CC9", 0, 0));
+    sf::Texture cc9;
+    cc9.loadFromFile("./resources/community/community10.png");
+    communitychest_cards[9]->setImage(cc9);
+    communitychest_cards[9]->setId(9);
+
+    communitychest_cards.push_back(new CommunityChest(0, 0, 0, 0, "CC10", 0, 0));
+    sf::Texture cc10;
+    cc10.loadFromFile("./resources/community/community11.png");
+    communitychest_cards[10]->setImage(cc10);
+    communitychest_cards[10]->setId(10);
+
+    communitychest_cards.push_back(new CommunityChest(0, 0, 0, 0, "CC11", 0, 0));
+    sf::Texture cc11;
+    cc11.loadFromFile("./resources/community/community12.png");
+    communitychest_cards[11]->setImage(cc11);
+    communitychest_cards[11]->setId(11);
+
+    communitychest_cards.push_back(new CommunityChest(0, 0, 0, 0, "CC12", 0, 0));
+    sf::Texture cc12;
+    cc12.loadFromFile("./resources/community/community13.png");
+    communitychest_cards[12]->setImage(cc12);
+    communitychest_cards[12]->setId(12);
+
+    communitychest_cards.push_back(new CommunityChest(0, 0, 0, 0, "CC13", 0, 0));
+    sf::Texture cc13;
+    cc13.loadFromFile("./resources/community/community14.png");
+    communitychest_cards[13]->setImage(cc13);
+    communitychest_cards[13]->setId(13);
+
+    communitychest_cards.push_back(new CommunityChest(0, 0, 0, 0, "CC14", 0, 0));
+    sf::Texture cc14;
+    cc14.loadFromFile("./resources/community/community15.png");
+    communitychest_cards[14]->setImage(cc14);
+    communitychest_cards[14]->setId(14);
+
+    //-----------------------------------------------------------------------------------------------------------
+    //***********************************************************************************************************
+    //-----------------------------------------------------------------------------------------------------------
+
+    chance_cards.push_back(new Chance(0, 0, 0, 0, "C0", 0, 0));
+    sf::Texture c0;
+    c0.loadFromFile("./resources/chance/chance1.png");
+    chance_cards[0]->setImage(c0);
+    chance_cards[0]->setId(0);
+
+    chance_cards.push_back(new Chance(0, 0, 0, 0, "C1", 0, 0));
+    sf::Texture c1;
+    c1.loadFromFile("./resources/chance/chance2.png");
+    chance_cards[1]->setImage(c1);
+    chance_cards[1]->setId(1);
+
+    chance_cards.push_back(new Chance(0, 0, 0, 0, "C2", 0, 0));
+    sf::Texture c2;
+    c2.loadFromFile("./resources/chance/chance3.png");
+    chance_cards[2]->setImage(c2);
+    chance_cards[2]->setId(2);
+
+    chance_cards.push_back(new Chance(0, 0, 0, 0, "C3", 0, 0));
+    sf::Texture c3;
+    c3.loadFromFile("./resources/chance/chance4.png");
+    chance_cards[3]->setImage(c3);
+    chance_cards[3]->setId(3);
+
+    chance_cards.push_back(new Chance(0, 0, 0, 0, "C4", 0, 0));
+    sf::Texture c4;
+    c4.loadFromFile("./resources/chance/chance5.png");
+    chance_cards[4]->setImage(c4);
+    chance_cards[4]->setId(4);
+
+    chance_cards.push_back(new Chance(0, 0, 0, 0, "C5", 0, 0));
+    sf::Texture c5;
+    c5.loadFromFile("./resources/chance/chance6.png");
+    chance_cards[5]->setImage(c5);
+    chance_cards[5]->setId(5);
+
+    chance_cards.push_back(new Chance(0, 0, 0, 0, "C6", 0, 0));
+    sf::Texture c6;
+    c6.loadFromFile("./resources/chance/chance7.png");
+    chance_cards[6]->setImage(c6);
+    chance_cards[6]->setId(6);
+
+    chance_cards.push_back(new Chance(0, 0, 0, 0, "C7", 0, 0));
+    sf::Texture c7;
+    c7.loadFromFile("./resources/chance/chance8.png");
+    chance_cards[7]->setImage(c7);
+    chance_cards[7]->setId(7);
+
+    chance_cards.push_back(new Chance(0, 0, 0, 0, "C8", 0, 0));
+    sf::Texture c8;
+    c8.loadFromFile("./resources/chance/chance9.png");
+    chance_cards[8]->setImage(c8);
+    chance_cards[8]->setId(8);
+
+    chance_cards.push_back(new Chance(0, 0, 0, 0, "C9", 0, 0));
+    sf::Texture c9;
+    c9.loadFromFile("./resources/chance/chance10.png");
+    chance_cards[9]->setImage(c9);
+    chance_cards[9]->setId(9);
+
+    chance_cards.push_back(new Chance(0, 0, 0, 0, "C10", 0, 0));
+    sf::Texture c10;
+    c10.loadFromFile("./resources/chance/chance11.png");
+    chance_cards[10]->setImage(c10);
+    chance_cards[10]->setId(10);
+
+    chance_cards.push_back(new Chance(0, 0, 0, 0, "C11", 0, 0));
+    sf::Texture c11;
+    c11.loadFromFile("./resources/chance/chance12.png");
+    chance_cards[11]->setImage(c11);
+    chance_cards[11]->setId(11);
+
+    chance_cards.push_back(new Chance(0, 0, 0, 0, "C12", 0, 0));
+    sf::Texture c12;
+    c12.loadFromFile("./resources/chance/chance13.png");
+    chance_cards[12]->setImage(c12);
+    chance_cards[12]->setId(12);
+
+    chance_cards.push_back(new Chance(0, 0, 0, 0, "C13", 0, 0));
+    sf::Texture c13;
+    c13.loadFromFile("./resources/chance/chance14.png");
+    chance_cards[13]->setImage(c13);
+    chance_cards[13]->setId(13);
 }

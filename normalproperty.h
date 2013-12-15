@@ -15,7 +15,7 @@ public:
 	virtual int getCost();
 	void setOwner(int);
 	int getOwner();
-	void setHouse(int);
+	void addHouses();
 	int getHouse();
 
 	virtual sf::IntRect getRect();

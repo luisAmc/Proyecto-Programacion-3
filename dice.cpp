@@ -1,6 +1,6 @@
 #include "dice.h"
 #include <ctime>
-#include <stdlib.h>
+#include <cstdlib>
 #include <iostream>
 using namespace std;
 

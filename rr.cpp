@@ -5,6 +5,7 @@
 RR::RR(int x, int y, int rent, int cost, const char* name, int px, int py):
 	PropertyCard(x, y, rent, cost, name, px, py){
 		setAvailable(1);
+		railroads = 0;
 }
 RR::~RR(){
 	//Dtor RR
@@ -39,4 +40,12 @@ int RR::getOwner(){
 }
 int RR::getCost(){
 	return cost;
+}
+void RR::addRailroads(){
+	railroads++;
+}
+int RR::getRailroads(){
+	if (railroads >= 4)
+		return 4;
+	return railroads;
 }

@@ -14,6 +14,7 @@ public:
 	virtual sf::IntRect getRect();
 	virtual int getCost();
 
+	void setId(int);
 	int getId();
 private:
 	int id;

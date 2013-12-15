@@ -4,6 +4,8 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
+#include <cstdlib>
+#include <ctime>
 #include "player.h"
 #include "board.h"
 #include "propertycard.h"
@@ -17,6 +19,8 @@ vector<sf::IntRect> vectorCards(int j);
 void selectorRectangles();
 vector<sf::Sprite> createSprites();
 vector<sf::Vector2i> boardPosition();
+void drawMiniProperties(sf::RenderWindow&, vector<int>&, vector<int>&);
+void loadMiniProperties(vector<sf::Sprite>&);
 
 int main (int argc, char * argv[]) {
 
@@ -27,11 +31,28 @@ int main (int argc, char * argv[]) {
     sf::RenderWindow player_selector;
     sf::RenderWindow buy_property;
     sf::RenderWindow pay_window;
+    sf::RenderWindow winner_window;
+    sf::RenderWindow auction_window;
+
+    vector<int> mini_pj1;
+    vector<int> mini_pj2;
 
     Board board;
     vector<PropertyCard*> board_places = board.getPlaces();
     vector<sf::Sprite> board_sprites = createSprites();
+    vector<sf::Sprite> mini_properties;
+    loadMiniProperties(mini_properties);
     vector<sf::Vector2i> board_positions = boardPosition();
+    vector<CommunityChest*> communitychest_cards = board.getCommunityChestCards();
+    vector<Chance*> chance_cards = board.getChanceCards();
+
+    srand(time(0));
+    for (int i = 0; i < communitychest_cards.size(); i++){
+        int r = rand() % communitychest_cards.size();
+        CommunityChest* temp = communitychest_cards[i];
+        communitychest_cards[i] = communitychest_cards[r];
+        communitychest_cards[r] = temp;
+    }
 
     Dice dice;
 
@@ -52,6 +73,24 @@ int main (int argc, char * argv[]) {
     sf::Sprite accept_button(accept_button_image);
     accept_button.setPosition(255, 80);
     sf::IntRect accept_button_rect(accept_button.getPosition().x, accept_button.getPosition().y, 60, 30);
+
+    sf::Texture close_button_image;
+    close_button_image.loadFromFile("./resources/close_button.png");
+    sf::Sprite close_button(close_button_image);
+    close_button.setPosition(150, 180);
+    sf::IntRect close_button_rect(close_button.getPosition().x, close_button.getPosition().y, 60, 30);
+
+    sf::Texture auction_accept_button_image;
+    auction_accept_button_image.loadFromFile("./resources/auction_accept_button.png");
+    sf::Sprite auction_accept_button(auction_accept_button_image);
+    auction_accept_button.setPosition(255, 110);
+    sf::IntRect auction_accept_button_rect(auction_accept_button.getPosition().x, auction_accept_button.getPosition().y, 60, 30);
+
+    sf::Texture auction_cancel_button_image;
+    auction_cancel_button_image.loadFromFile("./resources/auction_cancel_button.png");
+    sf::Sprite auction_cancel_button(auction_cancel_button_image);
+    auction_cancel_button.setPosition(255,150);
+    sf::IntRect auction_cancel_button_rect(auction_cancel_button.getPosition().x, auction_cancel_button.getPosition().y, 60, 30);
 
     sf::RenderWindow info_window;
     sf::Texture info_image;
@@ -182,6 +221,7 @@ int main (int argc, char * argv[]) {
                         window.draw(pj1_image); 
                         window.draw(pj2_image);   
                         window.draw(dice_image);
+                        drawMiniProperties(window, mini_pj1, mini_pj2);
                         window.display();
 
                         if (NormalProperty* np = dynamic_cast<NormalProperty*>(board_places[pj1_position])) {
@@ -202,8 +242,52 @@ int main (int argc, char * argv[]) {
                                                     np->setAvailable(0);
                                                     pj1.setCard(np);
                                                     np->setOwner(1);
+                                                    mini_pj1.push_back(pj1_position);
                                                     buy_property.close();
                                                 }
+                                            } else if (auction_button_rect.contains(sf::Mouse::getPosition(buy_property))) {
+                                                auction_window.create(sf::VideoMode(400, 228), "Monopoly");
+                                                auction_window.setPosition(sf::Vector2i(160, 190));
+                                                while (auction_window.isOpen()) {
+                                                    sf::Event aEvent;
+                                                    while (auction_window.pollEvent(aEvent)) {
+                                                        switch (aEvent.type) {
+                                                            case sf::Event::Closed:
+                                                            auction_window.close();
+                                                            buy_property.close();
+                                                            break;
+                                                            case sf::Event::MouseButtonPressed:
+                                                            if (auction_accept_button_rect.contains(sf::Mouse::getPosition(auction_window))) {
+                                                                if (pj2.getMoney() > np->getCost()){
+                                                                    pj2.setMoney(pj2.getMoney() - np->getCost());
+                                                                    np->setAvailable(0);
+                                                                    pj2.setCard(np);
+                                                                    np->setOwner(2);
+                                                                    mini_pj2.push_back(pj1_position);
+                                                                    auction_window.close();
+                                                                    buy_property.close();
+                                                                }
+                                                            } else if (auction_cancel_button_rect.contains(sf::Mouse::getPosition(auction_window))) {
+                                                                auction_window.close();
+                                                                buy_property.close();
+                                                            }
+                                                            break;
+                                                        }//Final del switch
+                                                    }//Final del while de pollEvent(aEvent)
+                                                    text_accept.str("");
+                                                    text_accept << pj2.getName() << endl << "do you  want to buy " 
+                                                    << endl << "this property?" << endl;
+                                                    sf::Text itext(text_accept.str(), font, 15);
+                                                    itext.setPosition(210, 40);
+                                                    itext.setColor(sf::Color::Black);
+                                                    auction_window.clear(sf::Color::White);
+                                                    auction_window.draw(np->getSprite());
+                                                    auction_window.draw(itext);
+                                                    auction_window.draw(auction_accept_button);
+                                                    auction_window.draw(auction_cancel_button);
+                                                    drawMiniProperties(window, mini_pj1, mini_pj2);
+                                                    auction_window.display();
+                                                }//Final del while de isOpen()
                                             }
                                             break;
                                         }
@@ -211,6 +295,7 @@ int main (int argc, char * argv[]) {
                                         buy_property.draw(np->getSprite());
                                         buy_property.draw(buy_button);
                                         buy_property.draw(auction_button);
+                                        drawMiniProperties(window, mini_pj1, mini_pj2);
                                         buy_property.display();
                                     }
                                 }    
@@ -228,23 +313,24 @@ int main (int argc, char * argv[]) {
                                                 case sf::Event::MouseButtonPressed:
                                                 if (accept_button_rect.contains(sf::Mouse::getPosition(pay_window))) {
                                                     pay_window.close();
-                                                }
+                                                } 
                                                 break;
                                             }
                                             text_accept.str("");
-                                            text_accept << pj1.getName() << " have to pay " << np->getRent() << endl;
+                                            text_accept << pj1.getName() << endl << " have to pay $" << np->getRent() << endl;
                                             sf::Text itext(text_accept.str(), font, 15);
-                                            itext.setPosition(240, 40);
+                                            itext.setPosition(235, 40);
                                             itext.setColor(sf::Color::Black);
                                             pay_window.clear(sf::Color::White);
                                             pay_window.draw(itext);
                                             pay_window.draw(np->getSprite());
                                             pay_window.draw(accept_button);
+                                            drawMiniProperties(window, mini_pj1, mini_pj2);
                                             pay_window.display();
                                         }
                                     }
                                     pj1.setMoney(pj1.getMoney() - np->getRent());
-                                    pj2.setMoney(pj1.getMoney() + np->getRent());
+                                    pj2.setMoney(pj2.getMoney() + np->getRent());
                                 }
                             }
                         //------------------------------------------------------------------------------------------------------------
@@ -268,8 +354,52 @@ int main (int argc, char * argv[]) {
                                                     pj1.setCard(u);
                                                     u->setOwner(1);
                                                     u->addCount();
+                                                    mini_pj1.push_back(pj1_position);
                                                     buy_property.close();
                                                 }
+                                            } else if (auction_button_rect.contains(sf::Mouse::getPosition(buy_property))) {
+                                                auction_window.create(sf::VideoMode(400, 228), "Monopoly");
+                                                auction_window.setPosition(sf::Vector2i(160, 190));
+                                                while (auction_window.isOpen()) {
+                                                    sf::Event aEvent;
+                                                    while (auction_window.pollEvent(aEvent)) {
+                                                        switch (aEvent.type) {
+                                                            case sf::Event::Closed:
+                                                            auction_window.close();
+                                                            buy_property.close();
+                                                            break;
+                                                            case sf::Event::MouseButtonPressed:
+                                                            if (auction_accept_button_rect.contains(sf::Mouse::getPosition(auction_window))) {
+                                                                if (pj2.getMoney() > u->getCost()){
+                                                                    pj2.setMoney(pj2.getMoney() - u->getCost());
+                                                                    u->setAvailable(0);
+                                                                    pj2.setCard(u);
+                                                                    u->setOwner(2);
+                                                                    mini_pj2.push_back(pj1_position);
+                                                                    auction_window.close();
+                                                                    buy_property.close();
+                                                                }
+                                                            } else if (auction_cancel_button_rect.contains(sf::Mouse::getPosition(auction_window))) {
+                                                                auction_window.close();
+                                                                buy_property.close();
+                                                            }
+                                                            break;
+                                                        }//Final del switch
+                                                    }//Final del while de pollEvent(aEvent)
+                                                    text_accept.str("");
+                                                    text_accept << pj2.getName() << endl << "do you  want to buy " 
+                                                    << endl << "this property?" << endl;
+                                                    sf::Text itext(text_accept.str(), font, 15);
+                                                    itext.setPosition(210, 40);
+                                                    itext.setColor(sf::Color::Black);
+                                                    auction_window.clear(sf::Color::White);
+                                                    auction_window.draw(u->getSprite());
+                                                    auction_window.draw(itext);
+                                                    auction_window.draw(auction_accept_button);
+                                                    auction_window.draw(auction_cancel_button);
+                                                    drawMiniProperties(window, mini_pj1, mini_pj2);
+                                                    auction_window.display();
+                                                }//Final del while de isOpen()
                                             }
                                             break;
                                         }//Final del switch de bEvent.type
@@ -277,10 +407,11 @@ int main (int argc, char * argv[]) {
                                         buy_property.draw(u->getSprite());
                                         buy_property.draw(buy_button);
                                         buy_property.draw(auction_button);
+                                        drawMiniProperties(window, mini_pj1, mini_pj2);
                                         buy_property.display();
                                     }//Fin del poolEvent(bEvent)
                                 }//Fin del mientras buy_property este abierta
-                            } else if (!u->getAvailable()) {
+                            } else if (!u->getAvailable()){
                                 if (u->getOwner() == 2) {
                                     pay_window.create(sf::VideoMode(400, 228), "Monopoly");
                                     pay_window.setPosition(sf::Vector2i(160, 190));
@@ -298,27 +429,145 @@ int main (int argc, char * argv[]) {
                                                 break;
                                             }
                                             text_accept.str("");
-                                            text_accept << pj1.getName() << " have to pay " << (u->getRent() * u->getCount()) << endl;
+                                            text_accept << pj1.getName() << endl << " have to pay $" << (u->getRent() * u->getCount()) << endl;
                                             sf::Text itext(text_accept.str(), font, 15);
-                                            itext.setPosition(240, 40);
+                                            itext.setPosition(235, 40);
                                             itext.setColor(sf::Color::Black);
                                             pay_window.clear(sf::Color::White);
                                             pay_window.draw(itext);
                                             pay_window.draw(u->getSprite());
                                             pay_window.draw(accept_button);
+                                            drawMiniProperties(window, mini_pj1, mini_pj2);
                                             pay_window.display();
                                         }
                                     }
                                     pj1.setMoney(pj1.getMoney() - (u->getRent() * u->getCount()));
-                                    pj2.setMoney(pj1.getMoney() + (u->getRent() * u->getCount()));
+                                    pj2.setMoney(pj2.getMoney() + (u->getRent() * u->getCount()));
                                 }
                             }
-                        } 
+                        //------------------------------------------------------------------------------------------------------------
+                        //------------------------------------------------------------------------------------------------------------
+                        } else if (RR* rr = dynamic_cast<RR*>(board_places[pj1_position])) {
+                            if (rr->getAvailable()){
+                                buy_property.create(sf::VideoMode(400, 228), "Monopoly");
+                                buy_property.setPosition(sf::Vector2i(160, 190));
+                                while (buy_property.isOpen()){
+                                    sf::Event bEvent;
+                                    while (buy_property.pollEvent(bEvent)){
+                                        switch (bEvent.type) {
+                                            case sf::Event::Closed:
+                                            buy_property.close();
+                                            break;
+                                            case sf::Event::MouseButtonPressed:
+                                            if (buy_button_rect.contains(sf::Mouse::getPosition(buy_property))) {
+                                                if (pj1.getMoney() > rr->getCost()) {
+                                                    pj1.setMoney(pj1.getMoney() - rr->getCost());
+                                                    rr->setAvailable(0);
+                                                    pj1.setCard(rr);
+                                                    rr->setOwner(1);
+                                                    rr->addRailroads();
+                                                    mini_pj1.push_back(pj1_position);
+                                                    buy_property.close();
+                                                }
+                                            } else if (auction_button_rect.contains(sf::Mouse::getPosition(buy_property))) {
+                                                auction_window.create(sf::VideoMode(400, 228), "Monopoly");
+                                                auction_window.setPosition(sf::Vector2i(160, 190));
+                                                while (auction_window.isOpen()) {
+                                                    sf::Event aEvent;
+                                                    while (auction_window.pollEvent(aEvent)) {
+                                                        switch (aEvent.type) {
+                                                            case sf::Event::Closed:
+                                                            auction_window.close();
+                                                            buy_property.close();
+                                                            break;
+                                                            case sf::Event::MouseButtonPressed:
+                                                            if (auction_accept_button_rect.contains(sf::Mouse::getPosition(auction_window))) {
+                                                                if (pj2.getMoney() > rr->getCost()){
+                                                                    pj2.setMoney(pj2.getMoney() - rr->getCost());
+                                                                    rr->setAvailable(0);
+                                                                    pj2.setCard(rr);
+                                                                    rr->setOwner(2);
+                                                                    mini_pj2.push_back(pj1_position);
+                                                                    auction_window.close();
+                                                                    buy_property.close();
+                                                                }
+                                                            } else if (auction_cancel_button_rect.contains(sf::Mouse::getPosition(auction_window))) {
+                                                                auction_window.close();
+                                                                buy_property.close();
+                                                            }
+                                                            break;
+                                                        }//Final del switch
+                                                    }//Final del while de pollEvent(aEvent)
+                                                    text_accept.str("");
+                                                    text_accept << pj2.getName() << endl << "do you  want to buy " 
+                                                    << endl << "this property?" << endl;
+                                                    sf::Text itext(text_accept.str(), font, 15);
+                                                    itext.setPosition(210, 40);
+                                                    itext.setColor(sf::Color::Black);
+                                                    auction_window.clear(sf::Color::White);
+                                                    auction_window.draw(rr->getSprite());
+                                                    auction_window.draw(itext);
+                                                    auction_window.draw(auction_accept_button);
+                                                    auction_window.draw(auction_cancel_button);
+                                                    drawMiniProperties(window, mini_pj1, mini_pj2);
+                                                    auction_window.display();
+                                                }//Final del while de isOpen()
+                                            }
+                                            break;
+                                        }//Final del switch de bEvent.type
+                                        buy_property.clear(sf::Color::White);
+                                        buy_property.draw(rr->getSprite());
+                                        buy_property.draw(buy_button);
+                                        buy_property.draw(auction_button);
+                                        drawMiniProperties(window, mini_pj1, mini_pj2);
+                                        buy_property.display();
+                                    }//Fin del poolEvent(bEvent)
+                                }//Fin del mientras buy_property este abierta
+                            } else if (!rr->getAvailable()){
+                                if (rr->getOwner() == 2){
+                                    pay_window.create(sf::VideoMode(400, 228), "Monopoly");
+                                    pay_window.setPosition(sf::Vector2i(160, 190));
+                                    while (pay_window.isOpen()) {
+                                        sf::Event rrEvent;
+                                        while (pay_window.pollEvent(rrEvent)) {
+                                            switch (rrEvent.type) {
+                                                case sf::Event::Closed:
+                                                pay_window.close();
+                                                break;
+                                                case sf::Event::MouseButtonPressed:
+                                                if (accept_button_rect.contains(sf::Mouse::getPosition(pay_window))){
+                                                    pay_window.close();
+                                                }
+                                                break;
+                                            }//Final del switch
+                                            text_accept.str("");
+                                            text_accept << pj1.getName() << endl << " have to pay $" << (rr->getRent() * rr->getRailroads()) << endl;
+                                            sf::Text itext(text_accept.str(), font, 15);
+                                            itext.setPosition(235, 40);
+                                            itext.setColor(sf::Color::Black);
+                                            pay_window.clear(sf::Color::White);
+                                            pay_window.draw(itext);
+                                            pay_window.draw(rr->getSprite());
+                                            pay_window.draw(accept_button);
+                                            drawMiniProperties(window, mini_pj1, mini_pj2);
+                                            pay_window.display();
+                                        }//Final del while de pollEvent(rrEvent)
+                                    }//Final del while de pay_window.isOpen()
+                                    pj1.setMoney(pj1.getMoney() - (rr->getRent() * rr->getRailroads()));
+                                    pj2.setMoney(pj2.getMoney() + (rr->getRent() * rr->getRailroads()));
+                                }
+                            }//Final de las validaciones
+                        } else if (CommunityChest* cc = dynamic_cast<CommunityChest*>(board_places[pj1_position])){
+
+                        }
                         //------------------------------------------------------------------------------------------------------------
                         //------------------------------------------------------------------------------------------------------------
                             //------------------------------------------
                         player_turn = 2;
                             //------------------------------------------
+                    //**************************************************************************************************************
+                    //--------------------------------------------------------------------------------------------------------------    
+                    //**************************************************************************************************************    
                     } else if (player_turn == 2) {
                         if (pj2_position + mov >= 40) {
                             pj2_position = mov - (40 - pj2_position);
@@ -337,6 +586,7 @@ int main (int argc, char * argv[]) {
                         window.draw(pj1_image);
                         window.draw(pj2_image);
                         window.draw(dice_image);
+                        drawMiniProperties(window, mini_pj1, mini_pj2);
                         window.display();
 
                         if (NormalProperty* np = dynamic_cast<NormalProperty*>(board_places[pj2_position])) {
@@ -357,8 +607,52 @@ int main (int argc, char * argv[]) {
                                                     np->setAvailable(0);
                                                     pj1.setCard(np);
                                                     np->setOwner(2);
+                                                    mini_pj2.push_back(pj2_position);
                                                     buy_property.close();
                                                 }
+                                            } else if (auction_button_rect.contains(sf::Mouse::getPosition(buy_property))) {
+                                                auction_window.create(sf::VideoMode(400, 228), "Monopoly");
+                                                auction_window.setPosition(sf::Vector2i(160, 190));
+                                                while (auction_window.isOpen()) {
+                                                    sf::Event aEvent;
+                                                    while (auction_window.pollEvent(aEvent)) {
+                                                        switch (aEvent.type) {
+                                                            case sf::Event::Closed:
+                                                                auction_window.close();
+                                                                buy_property.close();
+                                                                break;
+                                                            case sf::Event::MouseButtonPressed:
+                                                                if (auction_accept_button_rect.contains(sf::Mouse::getPosition(auction_window))) {
+                                                                    if (pj1.getMoney() > np->getCost()){
+                                                                        pj1.setMoney(pj1.getMoney() - np->getCost());
+                                                                        np->setAvailable(0);
+                                                                        pj1.setCard(np);
+                                                                        np->setOwner(2);
+                                                                        mini_pj1.push_back(pj2_position);
+                                                                        auction_window.close();
+                                                                        buy_property.close();
+                                                                    }
+                                                                } else if (auction_cancel_button_rect.contains(sf::Mouse::getPosition(auction_window))) {
+                                                                    auction_window.close();
+                                                                    buy_property.close();
+                                                                }
+                                                                break;
+                                                        }//Final del switch
+                                                    }//Final del while de pollEvent(aEvent)
+                                                    text_accept.str("");
+                                                    text_accept << pj1.getName() << endl << "do you  want to buy " 
+                                                        << endl << "this property?" << endl;
+                                                    sf::Text itext(text_accept.str(), font, 15);
+                                                    itext.setPosition(210, 40);
+                                                    itext.setColor(sf::Color::Black);
+                                                    auction_window.clear(sf::Color::White);
+                                                    auction_window.draw(np->getSprite());
+                                                    auction_window.draw(itext);
+                                                    auction_window.draw(auction_accept_button);
+                                                    auction_window.draw(auction_cancel_button);
+                                                    drawMiniProperties(window, mini_pj1, mini_pj2);
+                                                    auction_window.display();
+                                                }//Final del while de isOpen()
                                             }
                                             break;
                                         }
@@ -366,6 +660,7 @@ int main (int argc, char * argv[]) {
                                         buy_property.draw(np->getSprite());
                                         buy_property.draw(buy_button);
                                         buy_property.draw(auction_button);
+                                        drawMiniProperties(window, mini_pj1, mini_pj2);
                                         buy_property.display();
                                     }
                                 }    
@@ -387,14 +682,15 @@ int main (int argc, char * argv[]) {
                                                 break;
                                             }
                                             text_accept.str("");
-                                            text_accept << pj2.getName() << " have to pay " << np->getRent() << endl;
+                                            text_accept << pj2.getName() << endl << " have to pay $" << np->getRent() << endl;
                                             sf::Text itext(text_accept.str(), font, 15);
-                                            itext.setPosition(240, 40);
+                                            itext.setPosition(235, 40);
                                             itext.setColor(sf::Color::Black);
                                             pay_window.clear(sf::Color::White);
                                             pay_window.draw(itext);
                                             pay_window.draw(np->getSprite());
                                             pay_window.draw(accept_button);
+                                            drawMiniProperties(window, mini_pj1, mini_pj2);
                                             pay_window.display();
                                         }
                                     }
@@ -404,7 +700,7 @@ int main (int argc, char * argv[]) {
                             }
                         //------------------------------------------------------------------------------------------------------------
                         //------------------------------------------------------------------------------------------------------------
-                        } else if (Utilities* u = dynamic_cast<Utilities*>(board_places[pj1_position])) {
+                        } else if (Utilities* u = dynamic_cast<Utilities*>(board_places[pj2_position])) {
                             if (u->getAvailable()){
                                 buy_property.create(sf::VideoMode(400, 228), "Monopoly");
                                 buy_property.setPosition(sf::Vector2i(160, 190));
@@ -423,8 +719,52 @@ int main (int argc, char * argv[]) {
                                                     pj2.setCard(u);
                                                     u->setOwner(2);
                                                     u->addCount();
+                                                    mini_pj2.push_back(pj2_position);
                                                     buy_property.close();
                                                 }
+                                            } else if (auction_button_rect.contains(sf::Mouse::getPosition(buy_property))) {
+                                                auction_window.create(sf::VideoMode(400, 228), "Monopoly");
+                                                auction_window.setPosition(sf::Vector2i(160, 190));
+                                                while (auction_window.isOpen()) {
+                                                    sf::Event aEvent;
+                                                    while (auction_window.pollEvent(aEvent)) {
+                                                        switch (aEvent.type) {
+                                                            case sf::Event::Closed:
+                                                                auction_window.close();
+                                                                buy_property.close();
+                                                                break;
+                                                            case sf::Event::MouseButtonPressed:
+                                                                if (auction_accept_button_rect.contains(sf::Mouse::getPosition(auction_window))) {
+                                                                    if (pj1.getMoney() > u->getCost()){
+                                                                        pj1.setMoney(pj1.getMoney() - u->getCost());
+                                                                        u->setAvailable(0);
+                                                                        pj1.setCard(u);
+                                                                        u->setOwner(2);
+                                                                        mini_pj1.push_back(pj2_position);
+                                                                        auction_window.close();
+                                                                        buy_property.close();
+                                                                    }
+                                                                } else if (auction_cancel_button_rect.contains(sf::Mouse::getPosition(auction_window))) {
+                                                                    auction_window.close();
+                                                                    buy_property.close();
+                                                                }
+                                                                break;
+                                                        }//Final del switch
+                                                    }//Final del while de pollEvent(aEvent)
+                                                    text_accept.str("");
+                                                    text_accept << pj1.getName() << endl << "do you  want to buy " 
+                                                        << endl << "this property?" << endl;
+                                                    sf::Text itext(text_accept.str(), font, 15);
+                                                    itext.setPosition(210, 40);
+                                                    itext.setColor(sf::Color::Black);
+                                                    auction_window.clear(sf::Color::White);
+                                                    auction_window.draw(u->getSprite());
+                                                    auction_window.draw(itext);
+                                                    auction_window.draw(auction_accept_button);
+                                                    auction_window.draw(auction_cancel_button);
+                                                    drawMiniProperties(window, mini_pj1, mini_pj2);
+                                                    auction_window.display();
+                                                }//Final del while de isOpen()
                                             }
                                             break;
                                         }//Final del switch de bEvent.type
@@ -432,6 +772,7 @@ int main (int argc, char * argv[]) {
                                         buy_property.draw(u->getSprite());
                                         buy_property.draw(buy_button);
                                         buy_property.draw(auction_button);
+                                        drawMiniProperties(window, mini_pj1, mini_pj2);
                                         buy_property.display();
                                     }//Fin del poolEvent(bEvent)
                                 }//Fin del mientras buy_property este abierta
@@ -453,21 +794,134 @@ int main (int argc, char * argv[]) {
                                                 break;
                                             }
                                             text_accept.str("");
-                                            text_accept << pj2.getName() << " have to pay " << (u->getRent() * u->getCount()) << endl;
+                                            text_accept << pj2.getName() << endl << " have to pay $" << (u->getRent() * u->getCount()) << endl;
                                             sf::Text itext(text_accept.str(), font, 15);
-                                            itext.setPosition(240, 40);
+                                            itext.setPosition(235, 40);
                                             itext.setColor(sf::Color::Black);
                                             pay_window.clear(sf::Color::White);
                                             pay_window.draw(itext);
                                             pay_window.draw(u->getSprite());
                                             pay_window.draw(accept_button);
+                                            drawMiniProperties(window, mini_pj1, mini_pj2);
                                             pay_window.display();
                                         }
                                     }
                                     pj2.setMoney(pj2.getMoney() - (u->getRent() * u->getCount()));
-                                    pj1.setMoney(pj2.getMoney() + (u->getRent() * u->getCount()));
+                                    pj1.setMoney(pj1.getMoney() + (u->getRent() * u->getCount()));
                                 }
                             }
+                        //------------------------------------------------------------------------------------------------------------
+                        //------------------------------------------------------------------------------------------------------------
+                        } else if (RR* rr = dynamic_cast<RR*>(board_places[pj2_position])) {
+                           if (rr->getAvailable()){
+                            buy_property.create(sf::VideoMode(400, 228), "Monopoly");
+                            buy_property.setPosition(sf::Vector2i(160, 190));
+                            while (buy_property.isOpen()){
+                                sf::Event bEvent;
+                                while (buy_property.pollEvent(bEvent)){
+                                    switch (bEvent.type) {
+                                        case sf::Event::Closed:
+                                        buy_property.close();
+                                        break;
+                                        case sf::Event::MouseButtonPressed:
+                                        if (buy_button_rect.contains(sf::Mouse::getPosition(buy_property))) {
+                                            if (pj2.getMoney() > rr->getCost()) {
+                                                pj2.setMoney(pj2.getMoney() - rr->getCost());
+                                                rr->setAvailable(0);
+                                                pj2.setCard(rr);
+                                                rr->setOwner(2);
+                                                rr->addRailroads();
+                                                mini_pj2.push_back(pj2_position);
+                                                buy_property.close();
+                                            }
+                                        } else if (auction_button_rect.contains(sf::Mouse::getPosition(buy_property))) {
+                                                auction_window.create(sf::VideoMode(400, 228), "Monopoly");
+                                                auction_window.setPosition(sf::Vector2i(160, 190));
+                                                while (auction_window.isOpen()) {
+                                                    sf::Event aEvent;
+                                                    while (auction_window.pollEvent(aEvent)) {
+                                                        switch (aEvent.type) {
+                                                            case sf::Event::Closed:
+                                                                auction_window.close();
+                                                                buy_property.close();
+                                                                break;
+                                                            case sf::Event::MouseButtonPressed:
+                                                                if (auction_accept_button_rect.contains(sf::Mouse::getPosition(auction_window))) {
+                                                                    if (pj1.getMoney() > rr->getCost()){
+                                                                        pj1.setMoney(pj1.getMoney() - rr->getCost());
+                                                                        rr->setAvailable(0);
+                                                                        pj1.setCard(rr);
+                                                                        rr->setOwner(2);
+                                                                        mini_pj1.push_back(pj2_position);
+                                                                        auction_window.close();
+                                                                        buy_property.close();
+                                                                    }
+                                                                } else if (auction_cancel_button_rect.contains(sf::Mouse::getPosition(auction_window))) {
+                                                                    auction_window.close();
+                                                                    buy_property.close();
+                                                                }
+                                                                break;
+                                                        }//Final del switch
+                                                    }//Final del while de pollEvent(aEvent)
+                                                    text_accept.str("");
+                                                    text_accept << pj1.getName() << endl << "do you  want to buy " 
+                                                        << endl << "this property?" << endl;
+                                                    sf::Text itext(text_accept.str(), font, 15);
+                                                    itext.setPosition(210, 40);
+                                                    itext.setColor(sf::Color::Black);
+                                                    auction_window.clear(sf::Color::White);
+                                                    auction_window.draw(rr->getSprite());
+                                                    auction_window.draw(itext);
+                                                    auction_window.draw(auction_accept_button);
+                                                    auction_window.draw(auction_cancel_button);
+                                                    drawMiniProperties(window, mini_pj1, mini_pj2);
+                                                    auction_window.display();
+                                                }//Final del while de isOpen()
+                                            }
+                                        break;
+                                        }//Final del switch de bEvent.type
+                                        buy_property.clear(sf::Color::White);
+                                        buy_property.draw(rr->getSprite());
+                                        buy_property.draw(buy_button);
+                                        buy_property.draw(auction_button);
+                                        drawMiniProperties(window, mini_pj1, mini_pj2);
+                                        buy_property.display();
+                                    }//Fin del poolEvent(bEvent)
+                                }//Fin del mientras buy_property este abierta
+                            } else if (!rr->getAvailable()){
+                                if (rr->getOwner() == 1){
+                                    pay_window.create(sf::VideoMode(400, 228), "Monopoly");
+                                    pay_window.setPosition(sf::Vector2i(160, 190));
+                                    while (pay_window.isOpen()) {
+                                        sf::Event rrEvent;
+                                        while (pay_window.pollEvent(rrEvent)) {
+                                            switch (rrEvent.type) {
+                                                case sf::Event::Closed:
+                                                pay_window.close();
+                                                break;
+                                                case sf::Event::MouseButtonPressed:
+                                                if (accept_button_rect.contains(sf::Mouse::getPosition(pay_window))){
+                                                    pay_window.close();
+                                                }
+                                                break;
+                                            }//Final del switch
+                                            text_accept.str("");
+                                            text_accept << pj2.getName() << endl << " have to pay $" << (rr->getRent() * rr->getRailroads()) << endl;
+                                            sf::Text itext(text_accept.str(), font, 15);
+                                            itext.setPosition(235, 40);
+                                            itext.setColor(sf::Color::Black);
+                                            pay_window.clear(sf::Color::White);
+                                            pay_window.draw(itext);
+                                            pay_window.draw(rr->getSprite());
+                                            pay_window.draw(accept_button);
+                                            drawMiniProperties(window, mini_pj1, mini_pj2);
+                                            pay_window.display();
+                                        }//Final del while de pollEvent(rrEvent)
+                                    }//Final del while de pay_window.isOpen()
+                                    pj2.setMoney(pj2.getMoney() - (rr->getRent() * rr->getRailroads()));
+                                    pj1.setMoney(pj1.getMoney() + (rr->getRent() * rr->getRailroads()));
+                                }
+                            }//Final de las validaciones
                         }
                         //------------------------------------------------------------------------------------------------------------
                         //------------------------------------------------------------------------------------------------------------
@@ -488,7 +942,7 @@ int main (int argc, char * argv[]) {
         pj1Money.setString(money1.str());
         pj2Money.setString(money2.str());
 
-        window.clear(sf::Color::White);
+        window.clear(sf::Color::Black);
         window.draw(background);
         window.draw(pj1Name);
         window.draw(pj2Name);
@@ -497,7 +951,93 @@ int main (int argc, char * argv[]) {
         window.draw(pj1_image);
         window.draw(pj2_image);
         window.draw(dice_image);
+        drawMiniProperties(window, mini_pj1, mini_pj2);
         window.display();
+
+        if (pj1.getMoney() <= 0) {
+            winner_window.create(sf::VideoMode(400, 228), "Monopoly");
+            winner_window.setPosition(sf::Vector2i(160, 190));
+            while (winner_window.isOpen()) {
+                sf::Event wEvent;
+                while (winner_window.pollEvent(wEvent)) {
+                    switch(wEvent.type) {
+                        case sf::Event::Closed:
+                        winner_window.close();
+                        window.close();
+                        break;
+                        case sf::Event::MouseButtonPressed:
+                        if (close_button_rect.contains(sf::Mouse::getPosition(winner_window))) {
+                            winner_window.close();
+                            window.close();
+                        }
+                        break;
+                    }
+                    text_accept.str("");
+                    text_accept << pj1.getName() << endl << "ha quedado en bancarota." << endl << endl << pj2.getName() << endl << "es el ganador! Felicitaciones!" << endl;
+                    sf::Text itext(text_accept.str(), font, 22);
+                    itext.setPosition(10, 40);
+                    itext.setColor(sf::Color::Black);
+                    winner_window.clear(sf::Color::White);
+                    winner_window.draw(itext);
+                    winner_window.draw(close_button);
+                    winner_window.display();
+
+                    window.clear(sf::Color::Black);
+                    window.draw(background);
+                    window.draw(pj1Name);
+                    window.draw(pj2Name);
+                    window.draw(pj1Money);
+                    window.draw(pj2Money);
+                    window.draw(pj1_image);
+                    window.draw(pj2_image);
+                    window.draw(dice_image);
+                    drawMiniProperties(window, mini_pj1, mini_pj2);
+                    window.display();
+                } 
+            }
+        } else if (pj2.getMoney() <= 0) {
+            winner_window.create(sf::VideoMode(400, 228), "Monopoly");
+            winner_window.setPosition(sf::Vector2i(160, 190));
+            while (winner_window.isOpen()) {
+                sf::Event wEvent;
+                while (winner_window.pollEvent(wEvent)) {
+                    switch(wEvent.type) {
+                        case sf::Event::Closed:
+                        winner_window.close();
+                        window.close();
+                        break;
+                        case sf::Event::MouseButtonPressed:
+                        if (close_button_rect.contains(sf::Mouse::getPosition(winner_window))) {
+                            winner_window.close();
+                            window.close();
+                        }
+                        break;
+                    }
+                    text_accept.str("");
+                    text_accept << pj2.getName() << endl << "ha quedado en bancarota." << endl << endl << pj1.getName() << endl << "es el ganador! Felicitaciones!" << endl;
+                    sf::Text itext(text_accept.str(), font, 22);
+                    itext.setPosition(20, 40);
+                    itext.setColor(sf::Color::Black);
+                    winner_window.clear(sf::Color::White);
+                    winner_window.draw(itext);
+                    winner_window.draw(close_button);
+                    winner_window.display();
+
+                    window.clear(sf::Color::Black);
+                    window.draw(background);
+                    window.draw(pj1Name);
+                    window.draw(pj2Name);
+                    window.draw(pj1Money);
+                    window.draw(pj2Money);
+                    window.draw(pj1_image);
+                    window.draw(pj2_image);
+                    window.draw(dice_image);
+                    drawMiniProperties(window, mini_pj1, mini_pj2);
+                    window.display();
+                } 
+            }
+        }
+
     }
     return 0;
 }
@@ -647,49 +1187,472 @@ vector<sf::Sprite> createSprites(){
 
 vector<sf::Vector2i> boardPosition(){
     vector<sf::Vector2i> positions;
-    positions.push_back(sf::Vector2i(535, 535));
-    positions.push_back(sf::Vector2i(489, 560));
-    positions.push_back(sf::Vector2i(439, 560));
-    positions.push_back(sf::Vector2i(389, 560));
-    positions.push_back(sf::Vector2i(339, 560));
-    positions.push_back(sf::Vector2i(289, 560));
-    positions.push_back(sf::Vector2i(239, 560));
-    positions.push_back(sf::Vector2i(189, 560));
-    positions.push_back(sf::Vector2i(139, 560));
-    positions.push_back(sf::Vector2i(89, 560));
-    positions.push_back(sf::Vector2i(18, 560));
+    positions.push_back(sf::Vector2i(530, 535));
+    positions.push_back(sf::Vector2i(484, 550));
+    positions.push_back(sf::Vector2i(434, 550));
+    positions.push_back(sf::Vector2i(384, 550));
+    positions.push_back(sf::Vector2i(334, 550));
+    positions.push_back(sf::Vector2i(284, 550));
+    positions.push_back(sf::Vector2i(234, 550));
+    positions.push_back(sf::Vector2i(184, 550));
+    positions.push_back(sf::Vector2i(134, 550));
+    positions.push_back(sf::Vector2i(84, 550));
+    positions.push_back(sf::Vector2i(18, 550));
 
-    positions.push_back(sf::Vector2i(18, 490));
-    positions.push_back(sf::Vector2i(18, 440));
-    positions.push_back(sf::Vector2i(18, 390));
-    positions.push_back(sf::Vector2i(18, 340));
-    positions.push_back(sf::Vector2i(18, 290));
-    positions.push_back(sf::Vector2i(18, 240));
-    positions.push_back(sf::Vector2i(18, 190));
-    positions.push_back(sf::Vector2i(18, 140));
-    positions.push_back(sf::Vector2i(18, 90));
-    positions.push_back(sf::Vector2i(18, 30));
+    positions.push_back(sf::Vector2i(18, 480));
+    positions.push_back(sf::Vector2i(18, 430));
+    positions.push_back(sf::Vector2i(18, 380));
+    positions.push_back(sf::Vector2i(18, 330));
+    positions.push_back(sf::Vector2i(18, 280));
+    positions.push_back(sf::Vector2i(18, 230));
+    positions.push_back(sf::Vector2i(18, 180));
+    positions.push_back(sf::Vector2i(18, 130));
+    positions.push_back(sf::Vector2i(18, 80));
+    positions.push_back(sf::Vector2i(18, 20));
 
-    positions.push_back(sf::Vector2i(89, 30));
-    positions.push_back(sf::Vector2i(139, 30));
-    positions.push_back(sf::Vector2i(189, 30));
-    positions.push_back(sf::Vector2i(239, 30));
-    positions.push_back(sf::Vector2i(289, 30));
-    positions.push_back(sf::Vector2i(339, 30));
-    positions.push_back(sf::Vector2i(389, 30));
-    positions.push_back(sf::Vector2i(439, 30));
-    positions.push_back(sf::Vector2i(489, 30));
-    positions.push_back(sf::Vector2i(560, 30));
+    positions.push_back(sf::Vector2i(79, 20));
+    positions.push_back(sf::Vector2i(129, 20));
+    positions.push_back(sf::Vector2i(179, 20));
+    positions.push_back(sf::Vector2i(229, 20));
+    positions.push_back(sf::Vector2i(279, 20));
+    positions.push_back(sf::Vector2i(329, 20));
+    positions.push_back(sf::Vector2i(379, 20));
+    positions.push_back(sf::Vector2i(429, 20));
+    positions.push_back(sf::Vector2i(479, 20));
+    positions.push_back(sf::Vector2i(550, 20));
 
-    positions.push_back(sf::Vector2i(560, 90));
-    positions.push_back(sf::Vector2i(560, 140));
-    positions.push_back(sf::Vector2i(560, 190));
-    positions.push_back(sf::Vector2i(560, 240));
-    positions.push_back(sf::Vector2i(560, 290));
-    positions.push_back(sf::Vector2i(560, 340));
-    positions.push_back(sf::Vector2i(560, 390));
-    positions.push_back(sf::Vector2i(560, 440));
-    positions.push_back(sf::Vector2i(560, 490));
+    positions.push_back(sf::Vector2i(550, 80));
+    positions.push_back(sf::Vector2i(550, 130));
+    positions.push_back(sf::Vector2i(550, 180));
+    positions.push_back(sf::Vector2i(550, 230));
+    positions.push_back(sf::Vector2i(550, 280));
+    positions.push_back(sf::Vector2i(550, 330));
+    positions.push_back(sf::Vector2i(550, 380));
+    positions.push_back(sf::Vector2i(550, 430));
+    positions.push_back(sf::Vector2i(550, 480));
 
     return positions;
+}
+void drawMiniProperties(sf::RenderWindow& window, vector<int>& pj1, vector<int>& pj2){
+    for (int i = 0; i < pj1.size(); i++){
+        if (pj1[i] == 1 || pj1[i] == 3) {
+            sf::Vector2f pos = ((pj1[i] == 1) ? sf::Vector2f(641, 62) : sf::Vector2f(668, 62));
+            
+            sf::Texture r;
+            r.loadFromFile("./resources/propiedad-ocupada.png");
+            sf::Sprite remp(r);
+            remp.setPosition(pos.x, pos.y + 209);
+            window.draw(remp);
+
+            sf::Texture t;
+            t.loadFromFile("./resources/propiedad-cafe.png");
+            sf::Sprite temp(t);
+            temp.setPosition(pos);
+            window.draw(temp);
+        } else if (pj1[i] == 6 || pj1[i] == 8 || pj1[i] == 9) {
+            sf::Vector2f pos;
+            if (pj1[i] == 6){
+                pos = sf::Vector2f(708, 62);
+            } else {
+                pos = ((pj1[i] == 8) ? sf::Vector2f(735, 62) : sf::Vector2f(762, 62));
+            }
+
+            sf::Texture r;
+            r.loadFromFile("./resources/propiedad-ocupada.png");
+            sf::Sprite remp(r);
+            remp.setPosition(pos.x, pos.y + 209);
+            window.draw(remp);
+
+            sf::Texture t;
+            t.loadFromFile("./resources/propiedad-celeste.png");
+            sf::Sprite temp(t);
+            temp.setPosition(pos);
+            window.draw(temp);
+        } else if (pj1[i] == 11 || pj1[i] == 13 || pj1[i] == 14) {
+            sf::Vector2f pos;
+            if (pj1[i] == 11){
+                pos = sf::Vector2f(627, 89);
+            } else {
+                pos = ((pj1[i] == 13) ? sf::Vector2f(654, 89) : sf::Vector2f(681, 89));
+            }
+
+            sf::Texture r;
+            r.loadFromFile("./resources/propiedad-ocupada.png");
+            sf::Sprite remp(r);
+            remp.setPosition(pos.x, pos.y + 209);
+            window.draw(remp);
+
+            sf::Texture t;
+            t.loadFromFile("./resources/propiedad-rosa.png");
+            sf::Sprite temp(t);
+            temp.setPosition(pos);
+            window.draw(temp);
+        } else if (pj1[i] == 16 || pj1[i] == 18 || pj1[i] == 19) {
+            sf::Vector2f pos;
+            if (pj1[i] == 16){
+                pos = sf::Vector2f(708, 89);
+            } else {
+                pos = ((pj1[i] == 18) ? sf::Vector2f(735, 89) : sf::Vector2f(762, 89));
+            }
+
+            sf::Texture r;
+            r.loadFromFile("./resources/propiedad-ocupada.png");
+            sf::Sprite remp(r);
+            remp.setPosition(pos.x, pos.y + 209);
+            window.draw(remp);
+
+            sf::Texture t;
+            t.loadFromFile("./resources/propiedad-naranja.png");
+            sf::Sprite temp(t);
+            temp.setPosition(pos);
+            window.draw(temp);
+        } else if (pj1[i] == 21 || pj1[i] == 23 || pj1[i] == 24) {
+            sf::Vector2f pos;
+            if (pj1[i] == 21){
+                pos = sf::Vector2f(627, 117);
+            } else {
+                pos = ((pj1[i] == 23) ? sf::Vector2f(654, 117) : sf::Vector2f(681, 117));
+            }
+
+            sf::Texture r;
+            r.loadFromFile("./resources/propiedad-ocupada.png");
+            sf::Sprite remp(r);
+            remp.setPosition(pos.x, pos.y + 209);
+            window.draw(remp);
+
+            sf::Texture t;
+            t.loadFromFile("./resources/propiedad_roja.png");
+            sf::Sprite temp(t);
+            temp.setPosition(pos);
+            window.draw(temp);
+        } else if (pj1[i] == 26 || pj1[i] == 27 || pj1[i] == 29) {
+            sf::Vector2f pos;
+            if (pj1[i] == 26){
+                pos = sf::Vector2f(708, 117);
+            } else {
+                pos = ((pj1[i] == 27) ? sf::Vector2f(735, 177) : sf::Vector2f(762, 117));
+            }
+
+            sf::Texture r;
+            r.loadFromFile("./resources/propiedad-ocupada.png");
+            sf::Sprite remp(r);
+            remp.setPosition(pos.x, pos.y + 209);
+            window.draw(remp);
+
+            sf::Texture t;
+            t.loadFromFile("./resources/propiedad-amarillo.png");
+            sf::Sprite temp(t);
+            temp.setPosition(pos);
+            window.draw(temp);
+        } else if (pj1[i] == 31 || pj1[i] == 32 || pj1[i] == 34) {
+            sf::Vector2f pos;
+            if (pj1[i] == 31){
+                pos = sf::Vector2f(627, 145);
+            } else {
+                pos = ((pj1[i] == 32) ? sf::Vector2f(654, 145) : sf::Vector2f(681, 145));
+            }
+
+            sf::Texture r;
+            r.loadFromFile("./resources/propiedad-ocupada.png");
+            sf::Sprite remp(r);
+            remp.setPosition(pos.x, pos.y + 209);
+            window.draw(remp);
+
+            sf::Texture t;
+            t.loadFromFile("./resources/propiedad-verde.png");
+            sf::Sprite temp(t);
+            temp.setPosition(pos);
+            window.draw(temp);
+        } else if (pj1[i] == 37 || pj1[i] == 39) {
+            sf::Vector2f pos = ((pj1[i] == 37) ? sf::Vector2f(722, 145) : sf::Vector2f(749, 145));
+            
+            sf::Texture r;
+            r.loadFromFile("./resources/propiedad-ocupada.png");
+            sf::Sprite remp(r);
+            remp.setPosition(pos.x, pos.y + 209);
+            window.draw(remp);
+
+            sf::Texture t;
+            t.loadFromFile("./resources/propiedad-azul.png");
+            sf::Sprite temp(t);
+            temp.setPosition(pos);
+            window.draw(temp);
+        } else if (pj1[i] == 12|| pj1[i] == 28) {
+            sf::Vector2f pos = ((pj1[i] == 12) ? sf::Vector2f(627, 174) : sf::Vector2f(654, 174));
+            
+            sf::Texture r;
+            r.loadFromFile("./resources/propiedad-ocupada.png");
+            sf::Sprite remp(r);
+            remp.setPosition(pos.x, pos.y + 209);
+            window.draw(remp);
+
+            sf::Texture t;
+            t.loadFromFile("./resources/propiedad-utiilities.png");
+            sf::Sprite temp(t);
+            temp.setPosition(pos);
+            window.draw(temp);
+        } else if (pj1[i] == 5 || pj1[i] == 15 || pj1[i] == 25 || pj1[i] == 35) {
+            sf::Vector2f pos;
+            switch (pj1[i]){
+                case 5:
+                pos = sf::Vector2f(681, 174);
+                break;
+                case 15:
+                pos = sf::Vector2f(708, 174);   
+                break;
+                case 25:
+                pos = sf::Vector2f(735, 174);
+                break;
+                case 35:
+                pos = sf::Vector2f(762, 174);
+                break;
+            }
+
+            sf::Texture r;
+            r.loadFromFile("./resources/propiedad-ocupada.png");
+            sf::Sprite remp(r);
+            remp.setPosition(pos.x, pos.y + 209);
+            window.draw(remp);    
+
+            sf::Texture t;
+            t.loadFromFile("./resources/propiedad-rr.png");
+            sf::Sprite temp(t);
+            temp.setPosition(pos);
+            window.draw(temp);
+        }
+    }//Final del for
+
+    for (int i = 0; i < pj2.size(); i++){
+        if (pj2[i] == 1 || pj2[i] == 3) {
+            sf::Vector2f pos = ((pj2[i] == 1) ? sf::Vector2f(641, 62) : sf::Vector2f(668, 62));
+            
+            sf::Texture r;
+            r.loadFromFile("./resources/propiedad-ocupada.png");
+            sf::Sprite remp(r);
+            remp.setPosition(pos.x, pos.y);
+            window.draw(remp);
+
+            sf::Texture t;
+            t.loadFromFile("./resources/propiedad-cafe.png");
+            sf::Sprite temp(t);
+            temp.setPosition(pos.x, pos.y + 209);
+            window.draw(temp);
+        } else if (pj2[i] == 6 || pj2[i] == 8 || pj2[i] == 9) {
+            sf::Vector2f pos;
+            if (pj2[i] == 6){
+                pos = sf::Vector2f(708, 62);
+            } else {
+                pos = ((pj2[i] == 8) ? sf::Vector2f(735, 62) : sf::Vector2f(762, 62));
+            }
+
+            sf::Texture r;
+            r.loadFromFile("./resources/propiedad-ocupada.png");
+            sf::Sprite remp(r);
+            remp.setPosition(pos.x, pos.y);
+            window.draw(remp);
+
+            sf::Texture t;
+            t.loadFromFile("./resources/propiedad-celeste.png");
+            sf::Sprite temp(t);
+            temp.setPosition(pos.x, pos.y + 209);
+            window.draw(temp);
+        } else if (pj2[i] == 11 || pj2[i] == 13 || pj2[i] == 14) {
+            sf::Vector2f pos;
+            if (pj2[i] == 11){
+                pos = sf::Vector2f(627, 89);
+            } else {
+                pos = ((pj2[i] == 13) ? sf::Vector2f(654, 89) : sf::Vector2f(681, 89));
+            }
+
+            sf::Texture r;
+            r.loadFromFile("./resources/propiedad-ocupada.png");
+            sf::Sprite remp(r);
+            remp.setPosition(pos.x, pos.y);
+            window.draw(remp);
+
+            sf::Texture t;
+            t.loadFromFile("./resources/propiedad-rosa.png");
+            sf::Sprite temp(t);
+            temp.setPosition(pos.x, pos.y + 209);
+            window.draw(temp);
+        } else if (pj2[i] == 16 || pj2[i] == 18 || pj2[i] == 19) {
+            sf::Vector2f pos;
+            if (pj2[i] == 16){
+                pos = sf::Vector2f(708, 89);
+            } else {
+                pos = ((pj2[i] == 18) ? sf::Vector2f(735, 89) : sf::Vector2f(762, 89));
+            }
+
+            sf::Texture r;
+            r.loadFromFile("./resources/propiedad-ocupada.png");
+            sf::Sprite remp(r);
+            remp.setPosition(pos.x, pos.y);
+            window.draw(remp);
+
+            sf::Texture t;
+            t.loadFromFile("./resources/propiedad-naranja.png");
+            sf::Sprite temp(t);
+            temp.setPosition(pos.x, pos.y + 209);
+            window.draw(temp);
+        } else if (pj2[i] == 21 || pj2[i] == 23 || pj2[i] == 24) {
+            sf::Vector2f pos;
+            if (pj2[i] == 21){
+                pos = sf::Vector2f(627, 117);
+            } else {
+                pos = ((pj2[i] == 23) ? sf::Vector2f(654, 117) : sf::Vector2f(681, 117));
+            }
+
+            sf::Texture r;
+            r.loadFromFile("./resources/propiedad-ocupada.png");
+            sf::Sprite remp(r);
+            remp.setPosition(pos.x, pos.y);
+            window.draw(remp);
+
+            sf::Texture t;
+            t.loadFromFile("./resources/propiedad_roja.png");
+            sf::Sprite temp(t);
+            temp.setPosition(pos.x, pos.y + 209);
+            window.draw(temp);
+        } else if (pj2[i] == 26 || pj2[i] == 27 || pj2[i] == 29) {
+            sf::Vector2f pos;
+            if (pj2[i] == 26){
+                pos = sf::Vector2f(708, 117);
+            } else {
+                pos = ((pj2[i] == 27) ? sf::Vector2f(735, 177) : sf::Vector2f(762, 117));
+            }
+
+            sf::Texture r;
+            r.loadFromFile("./resources/propiedad-ocupada.png");
+            sf::Sprite remp(r);
+            remp.setPosition(pos.x, pos.y);
+            window.draw(remp);
+
+            sf::Texture t;
+            t.loadFromFile("./resources/propiedad-amarillo.png");
+            sf::Sprite temp(t);
+            temp.setPosition(pos.x, pos.y + 209);
+            window.draw(temp);
+        } else if (pj2[i] == 31 || pj2[i] == 32 || pj2[i] == 34) {
+            sf::Vector2f pos;
+            if (pj2[i] == 31){
+                pos = sf::Vector2f(627, 145);
+            } else {
+                pos = ((pj2[i] == 32) ? sf::Vector2f(654, 145) : sf::Vector2f(681, 145));
+            }
+
+            sf::Texture r;
+            r.loadFromFile("./resources/propiedad-ocupada.png");
+            sf::Sprite remp(r);
+            remp.setPosition(pos.x, pos.y);
+            window.draw(remp);
+
+            sf::Texture t;
+            t.loadFromFile("./resources/propiedad-verde.png");
+            sf::Sprite temp(t);
+            temp.setPosition(pos.x, pos.y + 209);
+            window.draw(temp);
+        } else if (pj2[i] == 37 || pj2[i] == 39) {
+            sf::Vector2f pos = ((pj2[i] == 37) ? sf::Vector2f(722, 145) : sf::Vector2f(749, 145));
+            
+            sf::Texture r;
+            r.loadFromFile("./resources/propiedad-ocupada.png");
+            sf::Sprite remp(r);
+            remp.setPosition(pos.x, pos.y);
+            window.draw(remp);
+
+            sf::Texture t;
+            t.loadFromFile("./resources/propiedad-azul.png");
+            sf::Sprite temp(t);
+            temp.setPosition(pos.x, pos.y + 209);
+            window.draw(temp);
+        } else if (pj2[i] == 12|| pj2[i] == 28) {
+            sf::Vector2f pos = ((pj2[i] == 12) ? sf::Vector2f(627, 174) : sf::Vector2f(654, 174));
+            
+            sf::Texture r;
+            r.loadFromFile("./resources/propiedad-ocupada.png");
+            sf::Sprite remp(r);
+            remp.setPosition(pos.x, pos.y);
+            window.draw(remp);
+
+            sf::Texture t;
+            t.loadFromFile("./resources/propiedad-utiilities.png");
+            sf::Sprite temp(t);
+            temp.setPosition(pos.x, pos.y + 209);
+            window.draw(temp);
+        } else if (pj2[i] == 5 || pj2[i] == 15 || pj2[i] == 25 || pj2[i] == 35) {
+            sf::Vector2f pos;
+            switch (pj2[i]){
+                case 5:
+                pos = sf::Vector2f(681, 174);
+                break;
+                case 15:
+                pos = sf::Vector2f(708, 174);   
+                break;
+                case 25:
+                pos = sf::Vector2f(735, 174);
+                break;
+                case 35:
+                pos = sf::Vector2f(762, 174);
+                break;
+            }
+
+            sf::Texture r;
+            r.loadFromFile("./resources/propiedad-ocupada.png");
+            sf::Sprite remp(r);
+            remp.setPosition(pos.x, pos.y);
+            window.draw(remp);    
+
+            sf::Texture t;
+            t.loadFromFile("./resources/propiedad-rr.png");
+            sf::Sprite temp(t);
+            temp.setPosition(pos.x, pos.y + 209);
+            window.draw(temp);
+        }
+    }//Final del for
+}
+void loadMiniProperties(vector<sf::Sprite>& minis){
+    sf::Texture t1;
+    t1.loadFromFile("./resources/propiedad-cafe.png");
+    sf::Sprite s1(t1);
+    minis.push_back(s1);
+
+    sf::Texture t2;
+    t2.loadFromFile("./resources/propiedad-celeste.png");
+    sf::Sprite s2(t2);
+    minis.push_back(s2);
+
+    sf::Texture t3;
+    t3.loadFromFile("./resources/propiedad-rosa.png");
+    sf::Sprite s3(t3);
+    minis.push_back(s3);
+
+    sf::Texture t4;
+    t4.loadFromFile("./resources/propiedad-naranja.png");
+    sf::Sprite s4(t4);
+    minis.push_back(s4);
+
+    sf::Texture t5;
+    t5.loadFromFile("./resources/propiedad_roja.png");
+    sf::Sprite s5(t5);
+    minis.push_back(s5);
+
+    sf::Texture t6;
+    t6.loadFromFile("./resources/propiedad-amarillo.png");
+    sf::Sprite s6(t6);
+    minis.push_back(s6);
+
+    sf::Texture t7;
+    t7.loadFromFile("./resources/propiedad-verde.png");
+    sf::Sprite s7(t7);
+    minis.push_back(s7);
+
+    sf::Texture t8;
+    t8.loadFromFile("./resources/propiedad-azul.png");
+    sf::Sprite s8(t8);
+    minis.push_back(s8);
+
+    sf::Texture t9;
+    t9.loadFromFile("./resources/propiedad-ocupada.png");
+    sf::Sprite s9(t9);
+    minis.push_back(s9);
 }

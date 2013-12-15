@@ -28,6 +28,9 @@ sf::Sprite Chance::getSprite(){
 sf::IntRect Chance::getRect(){
 	return clickZone;
 }
+void Chance::setId(int i){
+	id = i;
+}
 int Chance::getId(){
 	return id;
 }

@@ -6,6 +6,7 @@
 NormalProperty::NormalProperty(int x, int y, int rent, int cost, const char* name, int px, int py) : 
 	PropertyCard(x, y, rent, cost, name, px, py){
 		setAvailable(1);
+		houses = 0;
 }
 
 NormalProperty::~NormalProperty(){
@@ -37,7 +38,7 @@ sf::Sprite NormalProperty::getSprite() {
 	return sprite;
 }
 
-void NormalProperty::setHouse(int h){
+void NormalProperty::addHouses(){
 	houses++;
 }
 
