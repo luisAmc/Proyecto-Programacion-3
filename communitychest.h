@@ -1,10 +1,12 @@
 #pragma once
 #include "SFML/Graphics.hpp"
 #include "propertycard.h"
+#include <vector>
+using namespace std;
 
 class CommunityChest : public PropertyCard {
 public:
-	CommunityChest(int, int, int, int, const char*, int, int);
+	CommunityChest(int, int, int, int, const char*, int, int, vector<int>);
 	virtual const char* getName();
 	virtual int getRent();
 	virtual void setAvailable(int);

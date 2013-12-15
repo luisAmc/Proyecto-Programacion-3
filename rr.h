@@ -1,10 +1,12 @@
 #pragma once
 #include "propertycard.h"
 #include <string>
+#include <vector>
+using namespace std;
 
 class RR : public PropertyCard {
 public:
-	RR(int, int, int, int, const char*, int, int);
+	RR(int, int, int, int, const char*, int, int, vector<int>);
 	~RR();
 	virtual const char* getName();
 	virtual int getRent();

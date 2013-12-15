@@ -1,10 +1,11 @@
 #include "communitychest.h"
 #include "SFML/Graphics.hpp"
 #include "propertycard.h"
+using namespace std;
 
 //int X, int Y, int Rent, const char* Name, int px, int py
-CommunityChest::CommunityChest(int x, int y, int rent, int cost, const char* name, int px, int py) : 
-	PropertyCard(x, y, rent, cost, name, px, py){
+CommunityChest::CommunityChest(int x, int y, int rent, int cost, const char* name, int px, int py, vector<int> prices) : 
+	PropertyCard(x, y, rent, cost, name, px, py, prices){
 	setAvailable(1);
 }
 const char* CommunityChest::getName(){

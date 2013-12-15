@@ -1,10 +1,12 @@
 #pragma once
 #include "propertycard.h"
 #include <string>
+#include <vector>
+using namespace std;
 
 class NormalProperty : public PropertyCard {
 public:
-	NormalProperty(int, int, int, int, const char*, int, int);
+	NormalProperty(int, int, int, int, const char*, int, int, vector<int>, int);
 	~NormalProperty();
 	virtual const char* getName();
 	virtual int getRent();
@@ -20,5 +22,5 @@ public:
 
 	virtual sf::IntRect getRect();
 private:
-	int houses, owner;
+	int houses, owner, house_cost;
 };

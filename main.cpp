@@ -33,6 +33,7 @@ int main (int argc, char * argv[]) {
     sf::RenderWindow pay_window;
     sf::RenderWindow winner_window;
     sf::RenderWindow auction_window;
+    sf::RenderWindow house_window;
 
     vector<int> mini_pj1;
     vector<int> mini_pj2;
@@ -52,6 +53,14 @@ int main (int argc, char * argv[]) {
         CommunityChest* temp = communitychest_cards[i];
         communitychest_cards[i] = communitychest_cards[r];
         communitychest_cards[r] = temp;
+    }
+
+    srand(time(0));
+    for (int i = 0; i < chance_cards.size(); i++){
+        int r = rand() % chance_cards.size();
+        Chance* temp = chance_cards[i];
+        chance_cards[i] = chance_cards[r];
+        chance_cards[r] = temp;
     }
 
     Dice dice;
@@ -91,6 +100,18 @@ int main (int argc, char * argv[]) {
     sf::Sprite auction_cancel_button(auction_cancel_button_image);
     auction_cancel_button.setPosition(255,150);
     sf::IntRect auction_cancel_button_rect(auction_cancel_button.getPosition().x, auction_cancel_button.getPosition().y, 60, 30);
+
+    sf::Texture buy_house_accept_button_image;
+    buy_house_accept_button_image.loadFromFile("./resources/auction_accept_button.png");
+    sf::Sprite buy_house_accept_button(buy_house_accept_button_image);
+    buy_house_accept_button.setPosition(255, 110);
+    sf::IntRect buy_house_accept_button_rect(buy_house_accept_button.getPosition().x, buy_house_accept_button.getPosition().y, 60, 30);
+
+    sf::Texture buy_house_cancel_button_image;
+    buy_house_cancel_button_image.loadFromFile("./resources/auction_cancel_button.png");
+    sf::Sprite buy_house_cancel_button(buy_house_cancel_button_image);
+    buy_house_cancel_button.setPosition(255, 150);
+    sf::IntRect buy_house_cancel_button_rect(buy_house_cancel_button.getPosition().x, buy_house_cancel_button.getPosition().y, 60, 30);
 
     sf::RenderWindow info_window;
     sf::Texture info_image;
@@ -331,6 +352,40 @@ int main (int argc, char * argv[]) {
                                     }
                                     pj1.setMoney(pj1.getMoney() - np->getRent());
                                     pj2.setMoney(pj2.getMoney() + np->getRent());
+                                } else if (np->getOwner() == 1) {
+                                    if (np->getHouse() < 4) {
+                                        house_window.create(sf::VideoMode(400, 228), "Monopoly");
+                                        house_window.setPosition(sf::Vector2i(160, 190));
+                                        while (house_window.isOpen()) {
+                                            sf::Event hEvent;
+                                            while (house_window.pollEvent(hEvent)){
+                                                switch (hEvent.type) {
+                                                    case sf::Event::Closed:
+                                                        house_window.close();
+                                                        break;
+                                                    case sf::Event::MouseButtonPressed:
+                                                        if (buy_house_accept_button_rect.contains(sf::Mouse::getPosition(house_window))) {
+                                                            np->addHouses();
+                                                            house_window.close();
+                                                        } else if (buy_house_cancel_button_rect.contains(sf::Mouse::getPosition(house_window)))
+                                                            house_window.close();
+                                                        break;
+                                                }//Final del switch
+                                            }//Final del while
+                                            text_accept.str("");
+                                            text_accept << "Buy a house?" << endl;
+                                            sf::Text itext(text_accept.str(), font, 15);
+                                            itext.setPosition(235, 40);
+                                            itext.setColor(sf::Color::Black);
+                                            house_window.clear(sf::Color::White);
+                                            house_window.draw(np->getSprite());
+                                            house_window.draw(itext);
+                                            house_window.draw(buy_house_accept_button);
+                                            house_window.draw(buy_house_cancel_button);
+                                            drawMiniProperties(window, mini_pj1, mini_pj2);
+                                            house_window.display();
+                                        }//Final del isOpen()
+                                    }//Final del la validacion de cant. de casas
                                 }
                             }
                         //------------------------------------------------------------------------------------------------------------

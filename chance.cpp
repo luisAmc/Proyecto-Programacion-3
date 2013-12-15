@@ -1,9 +1,10 @@
 #include "SFML/Graphics.hpp"
 #include "chance.h"
 #include "propertycard.h"
+using namespace std;
 
-Chance::Chance(int x, int y, int rent, int cost, const char* name, int px, int py) :
-	PropertyCard(x, y, rent, cost, name, px, py){
+Chance::Chance(int x, int y, int rent, int cost, const char* name, int px, int py, vector<int> prices) :
+	PropertyCard(x, y, rent, cost, name, px, py, prices){
 	setAvailable(1);
 }
 const char* Chance::getName(){

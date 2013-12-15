@@ -1,9 +1,10 @@
 #include "propertycard.h"
 #include "utilities.h"
 #include <string>
+using namespace std;
 
-Utilities::Utilities(int x, int y, int rent, int cost, const char* name, int px, int py) : 
-	PropertyCard(x, y, rent, cost, name, px, py){
+Utilities::Utilities(int x, int y, int rent, int cost, const char* name, int px, int py, vector<int> prices) : 
+	PropertyCard(x, y, rent, cost, name, px, py, prices){
 		setAvailable(1);	
 		count = 0;
 }

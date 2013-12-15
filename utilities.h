@@ -1,10 +1,12 @@
 #pragma once
 #include "propertycard.h"
 #include <string>
+#include <vector>
+using namespace std;
 
 class Utilities : public PropertyCard {
 public:
-	Utilities(int, int, int, int, const char*, int, int);
+	Utilities(int, int, int, int, const char*, int, int, vector<int>);
 	~Utilities();
 	virtual const char* getName();
 	virtual int getRent();
