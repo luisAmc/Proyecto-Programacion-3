@@ -21,7 +21,7 @@ vector<sf::Vector2i> boardPosition();
 int main (int argc, char * argv[]) {
 
     cout << endl << endl
-        << "-------------Monopoly--------------" << endl;
+    << "-------------Monopoly--------------" << endl;
 
     sf::RenderWindow window;
     sf::RenderWindow player_selector;
@@ -51,7 +51,7 @@ int main (int argc, char * argv[]) {
     accept_button_image.loadFromFile("./resources/accept_button.png");
     sf::Sprite accept_button(accept_button_image);
     accept_button.setPosition(255, 80);
-    sf::IntRect accept_button_rect(accept_button.getPosition().x, accept_button.getPosition().y, )
+    sf::IntRect accept_button_rect(accept_button.getPosition().x, accept_button.getPosition().y, 60, 30);
 
     sf::RenderWindow info_window;
     sf::Texture info_image;
@@ -96,6 +96,8 @@ int main (int argc, char * argv[]) {
     money1 << "$ " << pj1.getMoney();
     std::stringstream money2;
     money2 << "$ " << pj2.getMoney();
+
+    std::stringstream text_accept;
 
     sf::Text pj1Money(money1.str(), font, 15);
     sf::Text pj2Money(money2.str(), font, 15);
@@ -144,158 +146,337 @@ int main (int argc, char * argv[]) {
 
             switch (Event.type) {
                 case sf::Event::Closed:
-                    window.close();
-                    break;
+                window.close();
+                break;
                 case sf::Event::MouseMoved:
-                    cardIndex = board.compare(window, info_window, auxiliar);
-                    if (cardIndex != -1){
-                        info_window.setPosition(sf::Vector2i(260, 245));
-                        info_window.setVisible(true);
-                        info_window.clear(sf::Color::White);
-                        info_window.draw(board_places[cardIndex]->getSprite());
-                        info_window.display();
-                    } else {
-                        info_window.setVisible(false);
-                    }
-                    break;
+                cardIndex = board.compare(window, info_window, auxiliar);
+                if (cardIndex != -1){
+                    info_window.setPosition(sf::Vector2i(260, 245));
+                    info_window.setVisible(true);
+                    info_window.clear(sf::Color::White);
+                    info_window.draw(board_places[cardIndex]->getSprite());
+                    info_window.display();
+                } else {
+                    info_window.setVisible(false);
+                }
+                break;
                 case sf::Event::MouseButtonPressed:
-                    if (dice_rect.contains(sf::Mouse::getPosition(window))){
-                        int mov = dice.getValue();
-                        if (player_turn == 1) {
-                            if (pj1_position + mov >= 40) {
-                                pj1_position = mov - (40 - pj1_position);
-                                pj1.setMoney(pj1.getMoney() + 200);
-                            } else {
-                                pj1_position += mov;
-                            }
+                if (dice_rect.contains(sf::Mouse::getPosition(window))){
+                    int mov = dice.getValue();
+                    if (player_turn == 1) {
+                        if (pj1_position + mov >= 40) {
+                            pj1_position = mov - (40 - pj1_position);
+                            pj1.setMoney(pj1.getMoney() + 200);
+                        } else {
+                            pj1_position += mov;
+                        }
 
-                            pj1_image.setPosition(board_positions[pj1_position].x, board_positions[pj1_position].y);
+                        pj1_image.setPosition(board_positions[pj1_position].x, board_positions[pj1_position].y);
 
-                            window.clear(sf::Color::White);
-                            window.draw(background);
-                            window.draw(pj1Name);
-                            window.draw(pj2Name);
-                            window.draw(pj1Money);
-                            window.draw(pj2Money);
-                            window.draw(pj1_image); 
-                            window.draw(pj2_image);   
-                            window.draw(dice_image);
-                            window.display();
+                        window.clear(sf::Color::White);
+                        window.draw(background);
+                        window.draw(pj1Name);
+                        window.draw(pj2Name);
+                        window.draw(pj1Money);
+                        window.draw(pj2Money);
+                        window.draw(pj1_image); 
+                        window.draw(pj2_image);   
+                        window.draw(dice_image);
+                        window.display();
 
-                            if (NormalProperty* np = dynamic_cast<NormalProperty*>(board_places[pj1_position])) {
-                                if (np->getAvailable()) {
-                                    buy_property.create(sf::VideoMode(400, 228), "Monopoly");
-                                    buy_property.setPosition(sf::Vector2i(160, 190));
-                                    while (buy_property.isOpen()) {
-                                        sf::Event bEvent;
-                                        while (buy_property.pollEvent(bEvent)) {
-                                            switch (bEvent.type) {
-                                                case sf::Event::Closed:
+                        if (NormalProperty* np = dynamic_cast<NormalProperty*>(board_places[pj1_position])) {
+                            if (np->getAvailable()) {
+                                buy_property.create(sf::VideoMode(400, 228), "Monopoly");
+                                buy_property.setPosition(sf::Vector2i(160, 190));
+                                while (buy_property.isOpen()) {
+                                    sf::Event bEvent;
+                                    while (buy_property.pollEvent(bEvent)) {
+                                        switch (bEvent.type) {
+                                            case sf::Event::Closed:
+                                            buy_property.close();
+                                            break;
+                                            case sf::Event::MouseButtonPressed:
+                                            if (buy_button_rect.contains(sf::Mouse::getPosition(buy_property))) {
+                                                if (pj1.getMoney() > np->getCost()) {
+                                                    pj1.setMoney(pj1.getMoney() - np->getCost());
+                                                    np->setAvailable(0);
+                                                    pj1.setCard(np);
+                                                    np->setOwner(1);
                                                     buy_property.close();
-                                                    break;
-                                                case sf::Event::MouseButtonPressed:
-                                                    if (buy_button_rect.contains(sf::Mouse::getPosition(buy_property))) {
-                                                        if (pj1.getMoney() > np->getCost()) {
-                                                            pj1.setMoney(pj1.getMoney() - np->getCost());
-                                                            np->setAvailable(0);
-                                                            pj1.setCard(np);
-                                                            np->setOwner(1);
-                                                            buy_property.close();
-                                                        }
-                                                    }
-                                                    break;
+                                                }
                                             }
-                                            buy_property.clear(sf::Color::White);
-                                            buy_property.draw(np->getSprite());
-                                            buy_property.draw(buy_button);
-                                            buy_property.draw(auction_button);
-                                            buy_property.display();
+                                            break;
                                         }
-                                    }    
-                                } else if (!np->getAvailable()){
+                                        buy_property.clear(sf::Color::White);
+                                        buy_property.draw(np->getSprite());
+                                        buy_property.draw(buy_button);
+                                        buy_property.draw(auction_button);
+                                        buy_property.display();
+                                    }
+                                }    
+                            } else if (!np->getAvailable()){
+                                if (np->getOwner() == 2) {
                                     pay_window.create(sf::VideoMode(400, 228), "Monopoly");
                                     pay_window.setPosition(sf::Vector2i(160, 190));
                                     while (pay_window.isOpen()){
                                         sf::Event pEvent;
-                                        switch (pEvent.type){
-                                            case sf::Event::Closed:
+                                        while (pay_window.pollEvent(pEvent)){
+                                            switch (pEvent.type){
+                                                case sf::Event::Closed:
                                                 pay_window.close();
                                                 break;
-                                            case sf::Event::MouseButtonPressed:
+                                                case sf::Event::MouseButtonPressed:
                                                 if (accept_button_rect.contains(sf::Mouse::getPosition(pay_window))) {
                                                     pay_window.close();
                                                 }
                                                 break;
+                                            }
+                                            text_accept.str("");
+                                            text_accept << pj1.getName() << " have to pay " << np->getRent() << endl;
+                                            sf::Text itext(text_accept.str(), font, 15);
+                                            itext.setPosition(240, 40);
+                                            itext.setColor(sf::Color::Black);
+                                            pay_window.clear(sf::Color::White);
+                                            pay_window.draw(itext);
+                                            pay_window.draw(np->getSprite());
+                                            pay_window.draw(accept_button);
+                                            pay_window.display();
                                         }
                                     }
                                     pj1.setMoney(pj1.getMoney() - np->getRent());
+                                    pj2.setMoney(pj1.getMoney() + np->getRent());
                                 }
-                            } 
-                            
-                            //------------------------------------------
-                            player_turn = 2;
-                            //------------------------------------------
-                        } else if (player_turn == 2) {
-                            if (pj2_position + mov >= 40) {
-                                pj2_position = mov - (40 - pj2_position);
-                                pj2.setMoney(pj2.getMoney() + 200);
-                            } else {
-                                pj2_position += mov;
                             }
-                            pj2_image.setPosition(board_positions[pj2_position].x, board_positions[pj2_position].y);
-
-                            window.clear(sf::Color::White);
-                            window.draw(background);
-                            window.draw(pj1Name);
-                            window.draw(pj2Name);
-                            window.draw(pj1Money);
-                            window.draw(pj2Money);
-                            window.draw(pj1_image);
-                            window.draw(pj2_image);
-                            window.draw(dice_image);
-                            window.display();
-
-                            if (NormalProperty* np = dynamic_cast<NormalProperty*>(board_places[pj2_position])) {
-                                if (np->getAvailable()) {
-                                    buy_property.create(sf::VideoMode(400, 228), "Monopoly");
-                                    buy_property.setPosition(sf::Vector2i(160, 190));
-                                    while (buy_property.isOpen()) {
-                                        sf::Event bEvent;
-                                        while (buy_property.pollEvent(bEvent)) {
-                                            switch (bEvent.type) {
-                                                case sf::Event::Closed:
+                        //------------------------------------------------------------------------------------------------------------
+                        //------------------------------------------------------------------------------------------------------------    
+                        } else if (Utilities* u = dynamic_cast<Utilities*>(board_places[pj1_position])) {
+                            if (u->getAvailable()){
+                                buy_property.create(sf::VideoMode(400, 228), "Monopoly");
+                                buy_property.setPosition(sf::Vector2i(160, 190));
+                                while (buy_property.isOpen()){
+                                    sf::Event bEvent;
+                                    while (buy_property.pollEvent(bEvent)){
+                                        switch (bEvent.type) {
+                                            case sf::Event::Closed:
+                                            buy_property.close();
+                                            break;
+                                            case sf::Event::MouseButtonPressed:
+                                            if (buy_button_rect.contains(sf::Mouse::getPosition(buy_property))) {
+                                                if (pj1.getMoney() > u->getCost()) {
+                                                    pj1.setMoney(pj1.getMoney() - u->getCost());
+                                                    u->setAvailable(0);
+                                                    pj1.setCard(u);
+                                                    u->setOwner(1);
+                                                    u->addCount();
                                                     buy_property.close();
-                                                    break;
-                                                case sf::Event::MouseButtonPressed:
-                                                    if (buy_button_rect.contains(sf::Mouse::getPosition(buy_property))) {
-                                                        if (pj2.getMoney() > np->getCost()) {
-                                                            pj2.setMoney(pj2.getMoney() - np->getCost());
-                                                            np->setAvailable(0);
-                                                            pj1.setCard(np);
-                                                            np->setOwner(2);
-                                                            buy_property.close();
-                                                        }
-                                                    }
-                                                    break;
+                                                }
                                             }
-                                            buy_property.clear(sf::Color::White);
-                                            buy_property.draw(np->getSprite());
-                                            buy_property.draw(buy_button);
-                                            buy_property.draw(auction_button);
-                                            buy_property.display();
+                                            break;
+                                        }//Final del switch de bEvent.type
+                                        buy_property.clear(sf::Color::White);
+                                        buy_property.draw(u->getSprite());
+                                        buy_property.draw(buy_button);
+                                        buy_property.draw(auction_button);
+                                        buy_property.display();
+                                    }//Fin del poolEvent(bEvent)
+                                }//Fin del mientras buy_property este abierta
+                            } else if (!u->getAvailable()) {
+                                if (u->getOwner() == 2) {
+                                    pay_window.create(sf::VideoMode(400, 228), "Monopoly");
+                                    pay_window.setPosition(sf::Vector2i(160, 190));
+                                    while (pay_window.isOpen()){
+                                        sf::Event pEvent;
+                                        while (pay_window.pollEvent(pEvent)){
+                                            switch (pEvent.type){
+                                                case sf::Event::Closed:
+                                                pay_window.close();
+                                                break;
+                                                case sf::Event::MouseButtonPressed:
+                                                if (accept_button_rect.contains(sf::Mouse::getPosition(pay_window))) {
+                                                    pay_window.close();
+                                                }
+                                                break;
+                                            }
+                                            text_accept.str("");
+                                            text_accept << pj1.getName() << " have to pay " << (u->getRent() * u->getCount()) << endl;
+                                            sf::Text itext(text_accept.str(), font, 15);
+                                            itext.setPosition(240, 40);
+                                            itext.setColor(sf::Color::Black);
+                                            pay_window.clear(sf::Color::White);
+                                            pay_window.draw(itext);
+                                            pay_window.draw(u->getSprite());
+                                            pay_window.draw(accept_button);
+                                            pay_window.display();
                                         }
-                                    }    
-                                } else if (!np->getAvailable()){
-                                    pj2.setMoney(pj2.getMoney() - np->getRent());
+                                    }
+                                    pj1.setMoney(pj1.getMoney() - (u->getRent() * u->getCount()));
+                                    pj2.setMoney(pj1.getMoney() + (u->getRent() * u->getCount()));
                                 }
-                            } 
-
+                            }
+                        } 
+                        //------------------------------------------------------------------------------------------------------------
+                        //------------------------------------------------------------------------------------------------------------
                             //------------------------------------------
-                            player_turn = 1;
+                        player_turn = 2;
                             //------------------------------------------
+                    } else if (player_turn == 2) {
+                        if (pj2_position + mov >= 40) {
+                            pj2_position = mov - (40 - pj2_position);
+                            pj2.setMoney(pj2.getMoney() + 200);
+                        } else {
+                            pj2_position += mov;
                         }
+                        pj2_image.setPosition(board_positions[pj2_position].x, board_positions[pj2_position].y);
+
+                        window.clear(sf::Color::White);
+                        window.draw(background);
+                        window.draw(pj1Name);
+                        window.draw(pj2Name);
+                        window.draw(pj1Money);
+                        window.draw(pj2Money);
+                        window.draw(pj1_image);
+                        window.draw(pj2_image);
+                        window.draw(dice_image);
+                        window.display();
+
+                        if (NormalProperty* np = dynamic_cast<NormalProperty*>(board_places[pj2_position])) {
+                            if (np->getAvailable()) {
+                                buy_property.create(sf::VideoMode(400, 228), "Monopoly");
+                                buy_property.setPosition(sf::Vector2i(160, 190));
+                                while (buy_property.isOpen()) {
+                                    sf::Event bEvent;
+                                    while (buy_property.pollEvent(bEvent)) {
+                                        switch (bEvent.type) {
+                                            case sf::Event::Closed:
+                                            buy_property.close();
+                                            break;
+                                            case sf::Event::MouseButtonPressed:
+                                            if (buy_button_rect.contains(sf::Mouse::getPosition(buy_property))) {
+                                                if (pj2.getMoney() > np->getCost()) {
+                                                    pj2.setMoney(pj2.getMoney() - np->getCost());
+                                                    np->setAvailable(0);
+                                                    pj1.setCard(np);
+                                                    np->setOwner(2);
+                                                    buy_property.close();
+                                                }
+                                            }
+                                            break;
+                                        }
+                                        buy_property.clear(sf::Color::White);
+                                        buy_property.draw(np->getSprite());
+                                        buy_property.draw(buy_button);
+                                        buy_property.draw(auction_button);
+                                        buy_property.display();
+                                    }
+                                }    
+                            } else if (!np->getAvailable()){
+                                if (np->getOwner() == 1){
+                                    pay_window.create(sf::VideoMode(400, 228), "Monopoly");
+                                    pay_window.setPosition(sf::Vector2i(160, 190));
+                                    while (pay_window.isOpen()){
+                                        sf::Event pEvent;
+                                        while (pay_window.pollEvent(pEvent)){
+                                            switch (pEvent.type){
+                                                case sf::Event::Closed:
+                                                pay_window.close();
+                                                break;
+                                                case sf::Event::MouseButtonPressed:
+                                                if (accept_button_rect.contains(sf::Mouse::getPosition(pay_window))) {
+                                                    pay_window.close();
+                                                }
+                                                break;
+                                            }
+                                            text_accept.str("");
+                                            text_accept << pj2.getName() << " have to pay " << np->getRent() << endl;
+                                            sf::Text itext(text_accept.str(), font, 15);
+                                            itext.setPosition(240, 40);
+                                            itext.setColor(sf::Color::Black);
+                                            pay_window.clear(sf::Color::White);
+                                            pay_window.draw(itext);
+                                            pay_window.draw(np->getSprite());
+                                            pay_window.draw(accept_button);
+                                            pay_window.display();
+                                        }
+                                    }
+                                    pj2.setMoney(pj2.getMoney() - np->getRent());
+                                    pj1.setMoney(pj1.getMoney() + np->getRent());
+                                }
+                            }
+                        //------------------------------------------------------------------------------------------------------------
+                        //------------------------------------------------------------------------------------------------------------
+                        } else if (Utilities* u = dynamic_cast<Utilities*>(board_places[pj1_position])) {
+                            if (u->getAvailable()){
+                                buy_property.create(sf::VideoMode(400, 228), "Monopoly");
+                                buy_property.setPosition(sf::Vector2i(160, 190));
+                                while (buy_property.isOpen()){
+                                    sf::Event bEvent;
+                                    while (buy_property.pollEvent(bEvent)){
+                                        switch (bEvent.type) {
+                                            case sf::Event::Closed:
+                                            buy_property.close();
+                                            break;
+                                            case sf::Event::MouseButtonPressed:
+                                            if (buy_button_rect.contains(sf::Mouse::getPosition(buy_property))) {
+                                                if (pj2.getMoney() > u->getCost()) {
+                                                    pj2.setMoney(pj2.getMoney() - u->getCost());
+                                                    u->setAvailable(0);
+                                                    pj2.setCard(u);
+                                                    u->setOwner(2);
+                                                    u->addCount();
+                                                    buy_property.close();
+                                                }
+                                            }
+                                            break;
+                                        }//Final del switch de bEvent.type
+                                        buy_property.clear(sf::Color::White);
+                                        buy_property.draw(u->getSprite());
+                                        buy_property.draw(buy_button);
+                                        buy_property.draw(auction_button);
+                                        buy_property.display();
+                                    }//Fin del poolEvent(bEvent)
+                                }//Fin del mientras buy_property este abierta
+                            } else if (!u->getAvailable()) {
+                                if (u->getOwner() == 1) {
+                                    pay_window.create(sf::VideoMode(400, 228), "Monopoly");
+                                    pay_window.setPosition(sf::Vector2i(160, 190));
+                                    while (pay_window.isOpen()){
+                                        sf::Event pEvent;
+                                        while (pay_window.pollEvent(pEvent)){
+                                            switch (pEvent.type){
+                                                case sf::Event::Closed:
+                                                pay_window.close();
+                                                break;
+                                                case sf::Event::MouseButtonPressed:
+                                                if (accept_button_rect.contains(sf::Mouse::getPosition(pay_window))) {
+                                                    pay_window.close();
+                                                }
+                                                break;
+                                            }
+                                            text_accept.str("");
+                                            text_accept << pj2.getName() << " have to pay " << (u->getRent() * u->getCount()) << endl;
+                                            sf::Text itext(text_accept.str(), font, 15);
+                                            itext.setPosition(240, 40);
+                                            itext.setColor(sf::Color::Black);
+                                            pay_window.clear(sf::Color::White);
+                                            pay_window.draw(itext);
+                                            pay_window.draw(u->getSprite());
+                                            pay_window.draw(accept_button);
+                                            pay_window.display();
+                                        }
+                                    }
+                                    pj2.setMoney(pj2.getMoney() - (u->getRent() * u->getCount()));
+                                    pj1.setMoney(pj2.getMoney() + (u->getRent() * u->getCount()));
+                                }
+                            }
+                        }
+                        //------------------------------------------------------------------------------------------------------------
+                        //------------------------------------------------------------------------------------------------------------
+                            //------------------------------------------
+                        player_turn = 1;
+                            //------------------------------------------
                     }
-                    break;
+                }
+                break;
             }  
 
         }//Final del while interno
@@ -322,7 +503,7 @@ int main (int argc, char * argv[]) {
 }
 
 void selectorRectangles(){
-    
+
 }
 
 vector<sf::IntRect> vectorCards(int j)

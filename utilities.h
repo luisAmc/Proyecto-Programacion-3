@@ -14,6 +14,7 @@ public:
 	virtual sf::Sprite getSprite();
 	virtual int getCost();
 	void addCount();
+	int getCount();
 	void setOwner(int);
 	int getOwner();
 

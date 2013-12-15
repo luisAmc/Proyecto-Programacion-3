@@ -32,7 +32,9 @@ sf::Sprite Utilities::getSprite(){
 void Utilities::addCount(){
 	count++;
 }
-
+int Utilities::getCount(){
+	return count;
+}
 sf::IntRect Utilities::getRect(){
 	return clickZone;
 }
