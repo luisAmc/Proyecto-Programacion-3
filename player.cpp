@@ -1,4 +1,5 @@
 #include "player.h"
+#include "propertycard.h"
 #include <cstring>
 
 Player::Player(string n, int ID)
@@ -64,10 +65,11 @@ int Player::getY()
     return position[1];
 }
 
-//void Player::setCard(PropertyCard card)
-//{
-//   cards.push_back(card);
-//}
+void Player::setCard(PropertyCard* card)
+{
+  cards.push_back(card);
+}
+
 void Player::setId(int ID){
     id = ID;
 }

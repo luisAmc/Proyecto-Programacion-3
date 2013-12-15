@@ -2,7 +2,7 @@
 #define PLAYER_H
 
 #include <string>
-//#include <PropertyCard.h>
+#include "propertycard.h"
 #include <vector>
 using namespace std;
 
@@ -24,7 +24,7 @@ class Player
         int getId();
         void addBox();
         int getBox();
-        //void setCard(PropertyCard);
+        void setCard(PropertyCard*);
         void draw(int);
 
     private:
@@ -34,7 +34,7 @@ class Player
         int turnJail;
         int position[2];
         int id, box;
-       //vector<PropertyCard> cards;
+        vector<PropertyCard*> cards;
 };
 
 #endif // PLAYER_H

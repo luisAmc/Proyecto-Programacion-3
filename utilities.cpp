@@ -2,8 +2,8 @@
 #include "utilities.h"
 #include <string>
 
-Utilities::Utilities(int x, int y, int rent, const char* name, int px, int py) : 
-	PropertyCard(x, y, rent, name, px, py){
+Utilities::Utilities(int x, int y, int rent, int cost, const char* name, int px, int py) : 
+	PropertyCard(x, y, rent, cost, name, px, py){
 		setAvailable(1);	
 }
 Utilities::~Utilities(){
@@ -35,4 +35,13 @@ void Utilities::addCount(){
 
 sf::IntRect Utilities::getRect(){
 	return clickZone;
+}
+void Utilities::setOwner(int o){
+	owner = o;
+}
+int Utilities::getOwner(){
+	return owner;
+}
+int Utilities::getCost(){
+	return cost;
 }

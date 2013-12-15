@@ -3,7 +3,7 @@
 
 class SpecialBox : public PropertyCard{
 public:
-	SpecialBox(int, int, int, const char*, int, int);
+	SpecialBox(int, int, int, int, const char*, int, int);
 	virtual const char* getName();
 	virtual int getRent();
 	virtual void setAvailable(int);
@@ -11,4 +11,5 @@ public:
 	virtual void setImage(sf::Texture);
 	virtual sf::Sprite getSprite();
 	virtual sf::IntRect getRect();
+	virtual int getCost();
 };

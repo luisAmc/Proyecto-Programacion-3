@@ -4,7 +4,7 @@
 
 class RR : public PropertyCard {
 public:
-	RR(int, int, int, const char*, int, int);
+	RR(int, int, int, int, const char*, int, int);
 	~RR();
 	virtual const char* getName();
 	virtual int getRent();
@@ -12,8 +12,11 @@ public:
 	virtual int getAvailable();
 	virtual void setImage(sf::Texture);
 	virtual sf::Sprite getSprite();
+	virtual int getCost();
+	void setOwner(int);
+	int getOwner();
 
 	virtual sf::IntRect getRect();
 private:
-	int railroads;
+	int railroads, owner;
 };

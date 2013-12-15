@@ -19,8 +19,14 @@ vector<sf::Sprite> createSprites();
 vector<sf::Vector2i> boardPosition();
 
 int main (int argc, char * argv[]) {
+
+    cout << endl << endl
+        << "-------------Monopoly--------------" << endl;
+
     sf::RenderWindow window;
     sf::RenderWindow player_selector;
+    sf::RenderWindow buy_property;
+    sf::RenderWindow pay_window;
 
     Board board;
     vector<PropertyCard*> board_places = board.getPlaces();
@@ -28,6 +34,24 @@ int main (int argc, char * argv[]) {
     vector<sf::Vector2i> board_positions = boardPosition();
 
     Dice dice;
+
+    sf::Texture buy_button_image;
+    buy_button_image.loadFromFile("./resources/buy_button.png");
+    sf::Sprite buy_button(buy_button_image);
+    buy_button.setPosition(255, 60);
+    sf::IntRect buy_button_rect(buy_button.getPosition().x, buy_button.getPosition().y, 60, 30);
+
+    sf::Texture auction_button_image;
+    auction_button_image.loadFromFile("./resources/auction_button.png");
+    sf::Sprite auction_button(auction_button_image);
+    auction_button.setPosition(230, 110);
+    sf::IntRect auction_button_rect(auction_button.getPosition().x, auction_button.getPosition().y, 120, 30);
+
+    sf::Texture accept_button_image;
+    accept_button_image.loadFromFile("./resources/accept_button.png");
+    sf::Sprite accept_button(accept_button_image);
+    accept_button.setPosition(255, 80);
+    sf::IntRect accept_button_rect(accept_button.getPosition().x, accept_button.getPosition().y, )
 
     sf::RenderWindow info_window;
     sf::Texture info_image;
@@ -37,39 +61,6 @@ int main (int argc, char * argv[]) {
     info_image.loadFromFile("./resources/propiedades/amarillas/atlantic_ave.png");
     sf::Sprite info(info_image);
     info.setPosition(0, 0);
-
-    sf::Texture selector_image;
-    if (!selector_image.loadFromFile("./resources/monopoly_tokens_original.png"))
-        return EXIT_FAILURE;
-    sf::Sprite selector(selector_image);
-
-    // player_selector.create(sf::VideoMode(800, 610), "Monopoly");
-    // player_selector.setPosition(sf::Vector2i(0, 0));
-    // while (player_selector.isOpen()) {
-    //     sf::Event Event;
-
-    //     while (player_selector.pollEvent(Event)) {
-
-    //         switch (Event.type) {
-    //             case sf::Event::Closed:
-    //                 player_selector.close();
-    //                 break;
-    //         }
-    //         if(sf::Keyboard::isKeyPressed(sf::Keyboard::Down)){
-    //             selector.setPosition(selector.getPosition().x, selector.getPosition().y + 10);
-    //         } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up)){
-    //             selector.setPosition(selector.getPosition().x, selector.getPosition().y - 10);
-    //         } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)){
-    //             selector.setPosition(selector.getPosition().x - 10, selector.getPosition().y);
-    //         } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)){
-    //             selector.setPosition(selector.getPosition().x + 10, selector.getPosition().y);
-    //         }
-
-    //         player_selector.clear(sf::Color::Black);
-    //         player_selector.draw(selector);
-    //         player_selector.display();
-    //     }
-    // }    
 
     //************************************************************************************************************
     //Creo lo referente a los dos jugadores
@@ -171,30 +162,133 @@ int main (int argc, char * argv[]) {
                     if (dice_rect.contains(sf::Mouse::getPosition(window))){
                         int mov = dice.getValue();
                         if (player_turn == 1) {
-                            if (pj1_position + mov > 40) {
+                            if (pj1_position + mov >= 40) {
                                 pj1_position = mov - (40 - pj1_position);
                                 pj1.setMoney(pj1.getMoney() + 200);
                             } else {
                                 pj1_position += mov;
                             }
-                            
+
                             pj1_image.setPosition(board_positions[pj1_position].x, board_positions[pj1_position].y);
 
-                            if (board_places[pj1_position]) {
-                                
-                            }
+                            window.clear(sf::Color::White);
+                            window.draw(background);
+                            window.draw(pj1Name);
+                            window.draw(pj2Name);
+                            window.draw(pj1Money);
+                            window.draw(pj2Money);
+                            window.draw(pj1_image); 
+                            window.draw(pj2_image);   
+                            window.draw(dice_image);
+                            window.display();
 
+                            if (NormalProperty* np = dynamic_cast<NormalProperty*>(board_places[pj1_position])) {
+                                if (np->getAvailable()) {
+                                    buy_property.create(sf::VideoMode(400, 228), "Monopoly");
+                                    buy_property.setPosition(sf::Vector2i(160, 190));
+                                    while (buy_property.isOpen()) {
+                                        sf::Event bEvent;
+                                        while (buy_property.pollEvent(bEvent)) {
+                                            switch (bEvent.type) {
+                                                case sf::Event::Closed:
+                                                    buy_property.close();
+                                                    break;
+                                                case sf::Event::MouseButtonPressed:
+                                                    if (buy_button_rect.contains(sf::Mouse::getPosition(buy_property))) {
+                                                        if (pj1.getMoney() > np->getCost()) {
+                                                            pj1.setMoney(pj1.getMoney() - np->getCost());
+                                                            np->setAvailable(0);
+                                                            pj1.setCard(np);
+                                                            np->setOwner(1);
+                                                            buy_property.close();
+                                                        }
+                                                    }
+                                                    break;
+                                            }
+                                            buy_property.clear(sf::Color::White);
+                                            buy_property.draw(np->getSprite());
+                                            buy_property.draw(buy_button);
+                                            buy_property.draw(auction_button);
+                                            buy_property.display();
+                                        }
+                                    }    
+                                } else if (!np->getAvailable()){
+                                    pay_window.create(sf::VideoMode(400, 228), "Monopoly");
+                                    pay_window.setPosition(sf::Vector2i(160, 190));
+                                    while (pay_window.isOpen()){
+                                        sf::Event pEvent;
+                                        switch (pEvent.type){
+                                            case sf::Event::Closed:
+                                                pay_window.close();
+                                                break;
+                                            case sf::Event::MouseButtonPressed:
+                                                if (accept_button_rect.contains(sf::Mouse::getPosition(pay_window))) {
+                                                    pay_window.close();
+                                                }
+                                                break;
+                                        }
+                                    }
+                                    pj1.setMoney(pj1.getMoney() - np->getRent());
+                                }
+                            } 
+                            
                             //------------------------------------------
                             player_turn = 2;
                             //------------------------------------------
                         } else if (player_turn == 2) {
-                            if (pj2_position + mov > 40) {
+                            if (pj2_position + mov >= 40) {
                                 pj2_position = mov - (40 - pj2_position);
                                 pj2.setMoney(pj2.getMoney() + 200);
                             } else {
                                 pj2_position += mov;
                             }
                             pj2_image.setPosition(board_positions[pj2_position].x, board_positions[pj2_position].y);
+
+                            window.clear(sf::Color::White);
+                            window.draw(background);
+                            window.draw(pj1Name);
+                            window.draw(pj2Name);
+                            window.draw(pj1Money);
+                            window.draw(pj2Money);
+                            window.draw(pj1_image);
+                            window.draw(pj2_image);
+                            window.draw(dice_image);
+                            window.display();
+
+                            if (NormalProperty* np = dynamic_cast<NormalProperty*>(board_places[pj2_position])) {
+                                if (np->getAvailable()) {
+                                    buy_property.create(sf::VideoMode(400, 228), "Monopoly");
+                                    buy_property.setPosition(sf::Vector2i(160, 190));
+                                    while (buy_property.isOpen()) {
+                                        sf::Event bEvent;
+                                        while (buy_property.pollEvent(bEvent)) {
+                                            switch (bEvent.type) {
+                                                case sf::Event::Closed:
+                                                    buy_property.close();
+                                                    break;
+                                                case sf::Event::MouseButtonPressed:
+                                                    if (buy_button_rect.contains(sf::Mouse::getPosition(buy_property))) {
+                                                        if (pj2.getMoney() > np->getCost()) {
+                                                            pj2.setMoney(pj2.getMoney() - np->getCost());
+                                                            np->setAvailable(0);
+                                                            pj1.setCard(np);
+                                                            np->setOwner(2);
+                                                            buy_property.close();
+                                                        }
+                                                    }
+                                                    break;
+                                            }
+                                            buy_property.clear(sf::Color::White);
+                                            buy_property.draw(np->getSprite());
+                                            buy_property.draw(buy_button);
+                                            buy_property.draw(auction_button);
+                                            buy_property.display();
+                                        }
+                                    }    
+                                } else if (!np->getAvailable()){
+                                    pj2.setMoney(pj2.getMoney() - np->getRent());
+                                }
+                            } 
 
                             //------------------------------------------
                             player_turn = 1;

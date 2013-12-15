@@ -4,7 +4,7 @@ main: main.o player.o propertycard.o normalproperty.o utilities.o rr.o board.o s
 main.o: player.h propertycard.h normalproperty.h utilities.h rr.h board.h specialbox.h dice.h communitychest.h chance.h main.cpp
 	g++ -c main.cpp -I./SFML/include
 
-player.o: player.h player.cpp
+player.o: propertycard.h player.h player.cpp
 	g++ -c player.cpp -I./SFML/include
 
 propertycard.o: propertycard.h propertycard.cpp

@@ -3,8 +3,8 @@
 #include <string>
 #include <iostream>
 
-NormalProperty::NormalProperty(int x, int y, int rent, const char* name, int px, int py) : 
-	PropertyCard(x, y, rent, name, px, py){
+NormalProperty::NormalProperty(int x, int y, int rent, int cost, const char* name, int px, int py) : 
+	PropertyCard(x, y, rent, cost, name, px, py){
 		setAvailable(1);
 }
 
@@ -47,4 +47,13 @@ int NormalProperty::getHouse(){
 
 sf::IntRect NormalProperty::getRect(){
 	return clickZone;
+}
+void NormalProperty::setOwner(int o){
+	owner = o;
+}
+int NormalProperty::getOwner(){
+	return owner;
+}
+int NormalProperty::getCost(){
+	return cost;
 }

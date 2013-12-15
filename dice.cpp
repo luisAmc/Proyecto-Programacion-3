@@ -15,6 +15,5 @@ int Dice::getValue(){
 		srand(time(0));
 		n = (rand() % 12) + 1;
 	}
-	cout << "El n es " << n << endl;
 	return n;
 }

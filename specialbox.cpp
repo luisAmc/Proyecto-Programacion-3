@@ -1,7 +1,7 @@
 #include "specialbox.h"
 
-SpecialBox::SpecialBox(int x, int y, int rent, const char* name, int px, int py) : 
-	PropertyCard(x, y, rent, name, px, py){
+SpecialBox::SpecialBox(int x, int y, int rent, int cost, const char* name, int px, int py) : 
+	PropertyCard(x, y, rent, cost, name, px, py){
 }
 const char* SpecialBox::getName(){
 	return name;
@@ -24,4 +24,7 @@ sf::Sprite SpecialBox::getSprite() {
 }
 sf::IntRect SpecialBox::getRect(){
 	return clickZone;
+}
+int SpecialBox::getCost(){
+	return cost;
 }

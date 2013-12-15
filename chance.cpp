@@ -2,8 +2,8 @@
 #include "chance.h"
 #include "propertycard.h"
 
-Chance::Chance(int x, int y, int rent, const char* name, int px, int py) :
-	PropertyCard(x, y, rent, name, px, py){
+Chance::Chance(int x, int y, int rent, int cost, const char* name, int px, int py) :
+	PropertyCard(x, y, rent, cost, name, px, py){
 	setAvailable(1);
 }
 const char* Chance::getName(){
@@ -30,4 +30,7 @@ sf::IntRect Chance::getRect(){
 }
 int Chance::getId(){
 	return id;
+}
+int Chance::getCost(){
+	return cost;
 }

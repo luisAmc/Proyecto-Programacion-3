@@ -4,7 +4,7 @@
 
 class Utilities : public PropertyCard {
 public:
-	Utilities(int, int, int, const char*, int, int);
+	Utilities(int, int, int, int, const char*, int, int);
 	~Utilities();
 	virtual const char* getName();
 	virtual int getRent();
@@ -12,9 +12,12 @@ public:
 	virtual int getAvailable();
 	virtual void setImage(sf::Texture);
 	virtual sf::Sprite getSprite();
+	virtual int getCost();
 	void addCount();
+	void setOwner(int);
+	int getOwner();
 
 	virtual sf::IntRect getRect();
 private:
-	int count;
+	int count, owner;
 };

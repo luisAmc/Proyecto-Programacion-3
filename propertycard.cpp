@@ -4,7 +4,7 @@
 #include <iostream>
 using namespace std;
 
-PropertyCard::PropertyCard(int X, int Y, int Rent, const char* Name, int px, int py) : x(X), y(Y), rent(Rent), name(Name){
+PropertyCard::PropertyCard(int X, int Y, int Rent, int Cost, const char* Name, int px, int py) : x(X), y(Y), rent(Rent), cost(Cost), name(Name){
 	card.setPosition(x, y);
 	card.setSize(sf::Vector2f(px, py));
 	card.setFillColor(sf::Color::Green);

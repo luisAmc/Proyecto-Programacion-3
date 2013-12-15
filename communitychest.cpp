@@ -3,8 +3,8 @@
 #include "propertycard.h"
 
 //int X, int Y, int Rent, const char* Name, int px, int py
-CommunityChest::CommunityChest(int x, int y, int rent, const char* name, int px, int py) : 
-	PropertyCard(x, y, rent, name, px, py){
+CommunityChest::CommunityChest(int x, int y, int rent, int cost, const char* name, int px, int py) : 
+	PropertyCard(x, y, rent, cost, name, px, py){
 	setAvailable(1);
 }
 const char* CommunityChest::getName(){
@@ -31,4 +31,7 @@ sf::IntRect CommunityChest::getRect(){
 }
 int CommunityChest::getId(){
 	return id;
+}
+int CommunityChest::getCost(){
+	return cost;
 }
