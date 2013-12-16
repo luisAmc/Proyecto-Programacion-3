@@ -30,3 +30,6 @@ sf::IntRect SpecialBox::getRect(){
 int SpecialBox::getCost(){
 	return cost;
 }
+int SpecialBox::getId(){
+	return id;
+}

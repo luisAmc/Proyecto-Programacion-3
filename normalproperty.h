@@ -15,6 +15,7 @@ public:
 	virtual void setImage(sf::Texture);
 	virtual sf::Sprite getSprite();
 	virtual int getCost();
+	int getHouseCost();
 	void setOwner(int);
 	int getOwner();
 	void addHouses();

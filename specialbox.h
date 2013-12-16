@@ -14,6 +14,7 @@ public:
 	virtual sf::Sprite getSprite();
 	virtual sf::IntRect getRect();
 	virtual int getCost();
+	int getId();
 private:
 	int id;
 };

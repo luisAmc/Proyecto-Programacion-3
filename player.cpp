@@ -13,7 +13,9 @@ Player::Player(string n, int ID)
     id = ID;
     box = 0;
 }
-
+void Player::setName(const char* n){
+    name = n;
+}
 string Player::getName()
 {
     return name;

@@ -11,6 +11,7 @@ class Player
     public:
         Player(string, int);
         string getName();
+        void setName(const char*);
         void setMoney(int);
         int getMoney();
         void setInJail(bool);

@@ -77,3 +77,6 @@ int NormalProperty::getOwner(){
 int NormalProperty::getCost(){
 	return cost;
 }
+int NormalProperty::getHouseCost(){
+	return house_cost;
+}
